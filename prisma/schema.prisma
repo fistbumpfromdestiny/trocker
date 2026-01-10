@@ -1,0 +1,109 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum LocationType {
+  APARTMENT
+  OUTDOOR
+  BUILDING_COMMON
+}
+
+model User {
+  id            String      @id @default(cuid())
+  email         String      @unique
+  name          String?
+  passwordHash  String
+  role          Role        @default(USER)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  apartments    Apartment[]
+  locationReports LocationReport[]
+
+  @@index([email])
+}
+
+model Cat {
+  id              String    @id @default(cuid())
+  name            String
+  hungerLevel     Int       @default(0)
+  lastFedAt       DateTime?
+  lastHungerUpdate DateTime @default(now())
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  locationReports LocationReport[]
+
+  @@index([name])
+}
+
+model Apartment {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  userId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  locationReports LocationReport[]
+
+  @@index([userId])
+}
+
+model OutdoorLocation {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  locationReports LocationReport[]
+}
+
+model LocationReport {
+  id            String       @id @default(cuid())
+  catId         String
+  userId        String
+  locationType  LocationType
+
+  apartmentId       String?
+  outdoorLocationId String?
+  buildingAreaName  String?
+
+  entryTime     DateTime
+  exitTime      DateTime?
+  notes         String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  cat             Cat              @relation(fields: [catId], references: [id], onDelete: Cascade)
+  user            User             @relation(fields: [userId], references: [id])
+  apartment       Apartment?       @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+  outdoorLocation OutdoorLocation? @relation(fields: [outdoorLocationId], references: [id], onDelete: Cascade)
+
+  @@index([catId, entryTime])
+  @@index([userId])
+  @@index([apartmentId])
+  @@index([outdoorLocationId])
+}
+
+model AppSettings {
+  id                    String   @id @default(cuid())
+  key                   String   @unique
+  value                 String
+  description           String?
+  updatedAt             DateTime @updatedAt
+
+  @@index([key])
+}
