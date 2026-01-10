@@ -2,14 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { HungerMeter } from "@/components/hunger/hunger-meter";
-import { FeedButton } from "@/components/hunger/feed-button";
 import { CurrentLocationCard } from "@/components/location/current-location-card";
 import { TimelineList } from "@/components/location/timeline-list";
 import { LocationReportForm } from "@/components/location/location-report-form";
 import { AlertCircle } from "lucide-react";
+// import { HungerMeter } from "@/components/hunger/hunger-meter";
+// import { FeedButton } from "@/components/hunger/feed-button";
 
 export default function DashboardPage() {
   const [dbError, setDbError] = useState(false);
@@ -87,20 +86,9 @@ export default function DashboardPage() {
       </div>
 
       {/* Quick Actions - Mobile First */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {/* Hunger Status */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Hunger Level</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <HungerMeter catId="rocky" />
-            <FeedButton catId="rocky" />
-          </CardContent>
-        </Card>
-
+      <div className="grid gap-4">
         {/* Current Location */}
-        <Card className="md:col-span-2 lg:col-span-2">
+        <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-lg">Current Location</CardTitle>
           </CardHeader>
@@ -108,6 +96,17 @@ export default function DashboardPage() {
             <CurrentLocationCard catId="rocky" />
           </CardContent>
         </Card>
+
+        {/* Hunger Status - DISABLED FOR NOW */}
+        {/* <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg">Hunger Level</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <HungerMeter catId="rocky" />
+            <FeedButton catId="rocky" />
+          </CardContent>
+        </Card> */}
       </div>
 
       {/* Report Location - Prominent on Mobile */}

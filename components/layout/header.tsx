@@ -22,7 +22,7 @@ export function Header({ user }: HeaderProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b border-border bg-background font-mono">
+      <header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur-sm font-mono">
         <div className="flex h-14 items-center justify-between px-4">
           {/* Left: Menu button and title */}
           <div className="flex items-center gap-3">
