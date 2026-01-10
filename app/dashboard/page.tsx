@@ -13,6 +13,8 @@ import { AlertCircle } from "lucide-react";
 export default function DashboardPage() {
   const [dbError, setDbError] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [terminalText, setTerminalText] = useState("Initializing Trocker...");
+  const [showCursor, setShowCursor] = useState(true);
 
   useEffect(() => {
     // Check if database is accessible
@@ -23,6 +25,26 @@ export default function DashboardPage() {
       })
       .catch(() => setDbError(true))
       .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    // Terminal animation sequence
+    const sequence = [
+      { text: "Initializing Trocker...", delay: 0 },
+      { text: "Locating Rocky (species: cat)...", delay: 800 },
+      { text: "Rocky located.", delay: 1600 },
+    ];
+
+    sequence.forEach(({ text, delay }) => {
+      setTimeout(() => setTerminalText(text), delay);
+    });
+
+    // Cursor blink
+    const cursorInterval = setInterval(() => {
+      setShowCursor((prev) => !prev);
+    }, 530);
+
+    return () => clearInterval(cursorInterval);
   }, []);
 
   if (loading) {
@@ -80,9 +102,13 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div>
-        <h1 className="text-3xl md:text-4xl font-bold mb-2">Track Rocky</h1>
-        <p className="text-muted-foreground">Follow Rocky's adventures around the neighborhood</p>
+      <div className="mb-6">
+        <div className="font-mono text-lg mb-2">
+          <span className="text-terminal-cyan">$</span>{" "}
+          <span className="text-foreground">{terminalText}</span>
+          <span className={`inline-block w-2 h-5 bg-primary ml-1 ${showCursor ? 'opacity-100' : 'opacity-0'}`}></span>
+        </div>
+        <p className="text-muted-foreground text-sm">Follow Rocky's adventures around the neighborhood</p>
       </div>
 
       {/* Quick Actions - Mobile First */}
