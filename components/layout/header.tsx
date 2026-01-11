@@ -37,6 +37,11 @@ export function Header({ user }: HeaderProps) {
             </Button>
 
             <Link href="/dashboard" className="flex items-center gap-2">
+              <img
+                src="/icon.png"
+                alt="Rocky"
+                className="w-8 h-8 rounded border border-primary"
+              />
               <span className="text-lg font-bold text-primary">trocker</span>
               <span className="hidden sm:inline text-muted-foreground text-xs">
                 v1.0.0

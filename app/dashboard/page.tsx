@@ -1,11 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CurrentLocationCard } from "@/components/location/current-location-card";
 import { TimelineList } from "@/components/location/timeline-list";
 import { LocationReportForm } from "@/components/location/location-report-form";
+import { InteractiveMap } from "@/components/location/interactive-map";
 import { AlertCircle } from "lucide-react";
 // import { HungerMeter } from "@/components/hunger/hunger-meter";
 // import { FeedButton } from "@/components/hunger/feed-button";
@@ -29,15 +36,34 @@ export default function DashboardPage() {
 
   useEffect(() => {
     // Terminal animation sequence
-    const sequence = [
-      { text: "Initializing Trocker...", delay: 0 },
-      { text: "Locating Rocky (species: cat)...", delay: 800 },
-      { text: "Rocky located.", delay: 1600 },
-    ];
+    const runAnimation = async () => {
+      setTerminalText("Initializing Trocker...");
 
-    sequence.forEach(({ text, delay }) => {
-      setTimeout(() => setTerminalText(text), delay);
-    });
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      setTerminalText("Locating Rocky (species: cat)...");
+
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      // Check if Rocky has a current location
+      try {
+        const res = await fetch("/api/locations/current?catId=rocky");
+        if (res.ok) {
+          const data = await res.json();
+          // Check if there's a current location (no exitTime)
+          if (data.location && data.exitTime === null) {
+            setTerminalText("Rocky's last location determined...");
+          } else {
+            setTerminalText("Unable to determine Rocky's current location...");
+          }
+        } else {
+          setTerminalText("Unable to determine Rocky's current location...");
+        }
+      } catch (error) {
+        setTerminalText("Unable to determine Rocky's current location...");
+      }
+    };
+
+    runAnimation();
 
     // Cursor blink
     const cursorInterval = setInterval(() => {
@@ -64,7 +90,9 @@ export default function DashboardPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl md:text-4xl font-bold mb-2">Track Rocky</h1>
-          <p className="text-muted-foreground">Follow Rocky's adventures around the neighborhood</p>
+          <p className="text-muted-foreground">
+            Follow Rocky's adventures around the neighborhood
+          </p>
         </div>
 
         <Card className="border-destructive">
@@ -84,11 +112,15 @@ export default function DashboardPage() {
                 <li>Make sure PostgreSQL is running</li>
                 <li>
                   Run migrations:{" "}
-                  <code className="bg-muted px-2 py-1 rounded text-xs">bun run db:migrate</code>
+                  <code className="bg-muted px-2 py-1 rounded text-xs">
+                    bun run db:migrate
+                  </code>
                 </li>
                 <li>
                   Seed the database:{" "}
-                  <code className="bg-muted px-2 py-1 rounded text-xs">bun run db:seed</code>
+                  <code className="bg-muted px-2 py-1 rounded text-xs">
+                    bun run db:seed
+                  </code>
                 </li>
                 <li>Refresh this page</li>
               </ol>
@@ -106,9 +138,22 @@ export default function DashboardPage() {
         <div className="font-mono text-lg mb-2">
           <span className="text-terminal-cyan">$</span>{" "}
           <span className="text-foreground">{terminalText}</span>
-          <span className={`inline-block w-2 h-5 bg-primary ml-1 ${showCursor ? 'opacity-100' : 'opacity-0'}`}></span>
+          <span
+            className={`inline-block w-2 h-5 bg-primary ml-1 ${showCursor ? "opacity-100" : "opacity-0"}`}
+          ></span>
         </div>
-        <p className="text-muted-foreground text-sm">Follow Rocky's adventures around the neighborhood</p>
+        <p className="text-muted-foreground text-sm">
+          Follow Rocky's adventures around the neighborhood
+        </p>
+      </div>
+
+      {/* Interactive Map */}
+      <div>
+        <h2 className="text-xl font-bold mb-3 flex items-center gap-2">
+          <span className="text-terminal-cyan">★</span>
+          Rocky's Territory
+        </h2>
+        <InteractiveMap catId="rocky" />
       </div>
 
       {/* Quick Actions - Mobile First */}
@@ -134,17 +179,6 @@ export default function DashboardPage() {
           </CardContent>
         </Card> */}
       </div>
-
-      {/* Report Location - Prominent on Mobile */}
-      <Card className="border-primary/50 shadow-md">
-        <CardHeader>
-          <CardTitle>Report Rocky's Location</CardTitle>
-          <CardDescription>Spotted Rocky? Let everyone know where he is!</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <LocationReportForm catId="rocky" />
-        </CardContent>
-      </Card>
 
       {/* Timeline */}
       <Card>
