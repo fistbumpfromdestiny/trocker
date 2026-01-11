@@ -224,4 +224,15 @@
   .text-terminal-blue { color: var(--terminal-blue); }
   .text-terminal-magenta { color: var(--terminal-magenta); }
   .text-terminal-cyan { color: var(--terminal-cyan); }
+
+  /* Pixelated font for retro aesthetic */
+  .pixel-font {
+    font-family: "Courier New", "Courier", monospace;
+    image-rendering: pixelated;
+    -webkit-font-smoothing: none;
+    -moz-osx-font-smoothing: grayscale;
+    font-weight: bold;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
 }

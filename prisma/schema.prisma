@@ -26,8 +26,9 @@ model User {
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 
-  apartments    Apartment[]
-  locationReports LocationReport[]
+  apartments       Apartment[]
+  locationReports  LocationReport[]
+  locationReportsV2 LocationReportV2[]
 
   @@index([email])
 }
@@ -41,7 +42,8 @@ model Cat {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  locationReports LocationReport[]
+  locationReports   LocationReport[]
+  locationReportsV2 LocationReportV2[]
 
   @@index([name])
 }
@@ -105,4 +107,72 @@ model AppSettings {
   updatedAt             DateTime @updatedAt
 
   @@index([key])
+}
+
+model Location {
+  id          String       @id @default(cuid())
+  externalId  String       @unique  // e.g., "building-10", "park-nw"
+  name        String
+  description String?
+  type        LocationType
+
+  // Grid positioning (percentage-based)
+  gridTop     String       // e.g., "33.33%"
+  gridLeft    String       // e.g., "50%"
+  gridWidth   String       // e.g., "16.66%"
+  gridHeight  String       // e.g., "16.66%"
+
+  isActive    Boolean      @default(true)
+  displayOrder Int         @default(0)
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  rooms              Room[]
+  locationReportsNew LocationReportV2[]
+
+  @@index([externalId])
+  @@index([type])
+}
+
+model Room {
+  id          String   @id @default(cuid())
+  locationId  String
+  name        String   // e.g., "Throne Room", "Royal Bedroom"
+  description String?
+  displayOrder Int     @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  location           Location         @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  locationReportsNew LocationReportV2[]
+
+  @@index([locationId])
+}
+
+// New version of LocationReport that uses the Location and Room models
+model LocationReportV2 {
+  id         String    @id @default(cuid())
+  catId      String
+  userId     String
+  locationId String
+  roomId     String?   // Optional - only if location has rooms
+
+  entryTime  DateTime
+  exitTime   DateTime?
+  notes      String?
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  cat      Cat      @relation(fields: [catId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id])
+  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  room     Room?    @relation(fields: [roomId], references: [id], onDelete: SetNull)
+
+  @@index([catId, entryTime])
+  @@index([userId])
+  @@index([locationId])
+  @@index([roomId])
 }

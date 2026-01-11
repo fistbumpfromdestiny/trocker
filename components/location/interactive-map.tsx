@@ -3,15 +3,35 @@
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+
+interface Room {
+  id: string;
+  name: string;
+  description: string | null;
+  displayOrder: number;
+}
 
 interface MapLocation {
   id: string;
+  externalId: string;
   name: string;
   type: "APARTMENT" | "OUTDOOR" | "BUILDING_COMMON";
-  top: string;    // % from top
-  left: string;   // % from left
-  width: string;  // % width
-  height: string; // % height
+  gridTop: string;
+  gridLeft: string;
+  gridWidth: string;
+  gridHeight: string;
+  rooms: Room[];
 }
 
 interface CurrentLocation {
@@ -20,68 +40,36 @@ interface CurrentLocation {
   exitTime: string | null;
 }
 
-// Define map locations using a finer 6x6 grid for better precision
-const MAP_LOCATIONS: MapLocation[] = [
-  // Row 1
-  { id: "park-nw", name: "Northwest Park", type: "OUTDOOR", top: "0%", left: "0%", width: "16.66%", height: "16.66%" },
-  { id: "building-1", name: "Apartment 1", type: "APARTMENT", top: "0%", left: "16.66%", width: "16.66%", height: "16.66%" },
-  { id: "street-n1", name: "North Street", type: "OUTDOOR", top: "0%", left: "33.33%", width: "16.66%", height: "16.66%" },
-  { id: "building-2", name: "Apartment 2", type: "APARTMENT", top: "0%", left: "50%", width: "16.66%", height: "16.66%" },
-  { id: "building-3", name: "Apartment 3", type: "APARTMENT", top: "0%", left: "66.66%", width: "16.66%", height: "16.66%" },
-  { id: "building-4", name: "Apartment 4", type: "APARTMENT", top: "0%", left: "83.33%", width: "16.67%", height: "16.66%" },
-
-  // Row 2
-  { id: "park-w1", name: "West Park 1", type: "OUTDOOR", top: "16.66%", left: "0%", width: "16.66%", height: "16.66%" },
-  { id: "building-5", name: "Apartment 5", type: "APARTMENT", top: "16.66%", left: "16.66%", width: "16.66%", height: "16.66%" },
-  { id: "courtyard-1", name: "Courtyard 1", type: "OUTDOOR", top: "16.66%", left: "33.33%", width: "16.66%", height: "16.66%" },
-  { id: "building-6", name: "Apartment 6", type: "APARTMENT", top: "16.66%", left: "50%", width: "16.66%", height: "16.66%" },
-  { id: "building-7", name: "Apartment 7", type: "APARTMENT", top: "16.66%", left: "66.66%", width: "16.66%", height: "16.66%" },
-  { id: "building-8", name: "Apartment 8", type: "APARTMENT", top: "16.66%", left: "83.33%", width: "16.67%", height: "16.66%" },
-
-  // Row 3
-  { id: "park-w2", name: "West Park 2", type: "OUTDOOR", top: "33.33%", left: "0%", width: "16.66%", height: "16.66%" },
-  { id: "building-9", name: "Apartment 9", type: "APARTMENT", top: "33.33%", left: "16.66%", width: "16.66%", height: "16.66%" },
-  { id: "courtyard-2", name: "Courtyard 2", type: "OUTDOOR", top: "33.33%", left: "33.33%", width: "16.66%", height: "16.66%" },
-  { id: "building-10", name: "Apartment 10", type: "APARTMENT", top: "33.33%", left: "50%", width: "16.66%", height: "16.66%" },
-  { id: "street-e1", name: "East Street 1", type: "OUTDOOR", top: "33.33%", left: "66.66%", width: "16.66%", height: "16.66%" },
-  { id: "building-11", name: "Apartment 11", type: "APARTMENT", top: "33.33%", left: "83.33%", width: "16.67%", height: "16.66%" },
-
-  // Row 4
-  { id: "park-w3", name: "West Park 3", type: "OUTDOOR", top: "50%", left: "0%", width: "16.66%", height: "16.66%" },
-  { id: "building-12", name: "Apartment 12", type: "APARTMENT", top: "50%", left: "16.66%", width: "16.66%", height: "16.66%" },
-  { id: "street-c1", name: "Central Street", type: "OUTDOOR", top: "50%", left: "33.33%", width: "16.66%", height: "16.66%" },
-  { id: "building-13", name: "Apartment 13", type: "APARTMENT", top: "50%", left: "50%", width: "16.66%", height: "16.66%" },
-  { id: "building-14", name: "Apartment 14", type: "APARTMENT", top: "50%", left: "66.66%", width: "16.66%", height: "16.66%" },
-  { id: "building-15", name: "Apartment 15", type: "APARTMENT", top: "50%", left: "83.33%", width: "16.67%", height: "16.66%" },
-
-  // Row 5
-  { id: "park-sw1", name: "Southwest Park 1", type: "OUTDOOR", top: "66.66%", left: "0%", width: "16.66%", height: "16.67%" },
-  { id: "building-16", name: "Apartment 16", type: "APARTMENT", top: "66.66%", left: "16.66%", width: "16.66%", height: "16.67%" },
-  { id: "building-17", name: "Apartment 17", type: "APARTMENT", top: "66.66%", left: "33.33%", width: "16.66%", height: "16.67%" },
-  { id: "parking-1", name: "Parking Area", type: "OUTDOOR", top: "66.66%", left: "50%", width: "16.66%", height: "16.67%" },
-  { id: "building-18", name: "Apartment 18", type: "APARTMENT", top: "66.66%", left: "66.66%", width: "16.66%", height: "16.67%" },
-  { id: "building-19", name: "Apartment 19", type: "APARTMENT", top: "66.66%", left: "83.33%", width: "16.67%", height: "16.67%" },
-
-  // Row 6
-  { id: "park-sw2", name: "Southwest Park 2", type: "OUTDOOR", top: "83.33%", left: "0%", width: "16.66%", height: "16.67%" },
-  { id: "park-s1", name: "South Park 1", type: "OUTDOOR", top: "83.33%", left: "16.66%", width: "16.66%", height: "16.67%" },
-  { id: "park-s2", name: "South Park 2", type: "OUTDOOR", top: "83.33%", left: "33.33%", width: "16.66%", height: "16.67%" },
-  { id: "street-s1", name: "South Street", type: "OUTDOOR", top: "83.33%", left: "50%", width: "16.66%", height: "16.67%" },
-  { id: "park-se1", name: "Southeast Park 1", type: "OUTDOOR", top: "83.33%", left: "66.66%", width: "16.66%", height: "16.67%" },
-  { id: "park-se2", name: "Southeast Park 2", type: "OUTDOOR", top: "83.33%", left: "83.33%", width: "16.67%", height: "16.67%" },
-];
-
 export function InteractiveMap({ catId }: { catId: string }) {
   const [currentLocation, setCurrentLocation] = useState<CurrentLocation | null>(null);
   const [isReporting, setIsReporting] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState<MapLocation | null>(null);
+  const [selectedRoomId, setSelectedRoomId] = useState<string>("");
+  const [locations, setLocations] = useState<MapLocation[]>([]);
+  const [loadingLocations, setLoadingLocations] = useState(true);
 
   useEffect(() => {
     fetchCurrentLocation();
+    fetchLocations();
   }, []);
+
+  const fetchLocations = async () => {
+    try {
+      const res = await fetch("/api/locations/list");
+      if (res.ok) {
+        const data = await res.json();
+        setLocations(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch locations:", error);
+    } finally {
+      setLoadingLocations(false);
+    }
+  };
 
   const fetchCurrentLocation = async () => {
     try {
-      const res = await fetch(`/api/locations/current?catId=${catId}`);
+      const res = await fetch(`/api/locations/current-v2?catId=${catId}`);
       if (res.ok) {
         const data = await res.json();
         setCurrentLocation(data);
@@ -91,24 +79,45 @@ export function InteractiveMap({ catId }: { catId: string }) {
     }
   };
 
-  const handleLocationClick = async (location: MapLocation) => {
+  const handleLocationClick = (location: MapLocation) => {
     if (isReporting) return;
+    setSelectedLocation(location);
+    // Pre-select first room if location has rooms
+    if (location.rooms.length > 0) {
+      setSelectedRoomId(location.rooms[0].id);
+    }
+  };
+
+  const handleConfirmReport = async () => {
+    if (!selectedLocation || isReporting) return;
+
+    // If location has rooms, ensure one is selected
+    if (selectedLocation.rooms.length > 0 && !selectedRoomId) {
+      toast.error("Please select a room");
+      return;
+    }
 
     setIsReporting(true);
     try {
-      const res = await fetch("/api/locations/report", {
+      const res = await fetch("/api/locations/report-v2", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           catId,
-          locationType: location.type,
-          locationId: location.id,
+          locationId: selectedLocation.id,
+          roomId: selectedRoomId || null,
         }),
       });
 
       if (res.ok) {
-        toast.success(`Rocky reported at ${location.name}`);
+        const selectedRoom = selectedLocation.rooms.find(r => r.id === selectedRoomId);
+        const locationName = selectedRoom
+          ? `${selectedLocation.name} (${selectedRoom.name})`
+          : selectedLocation.name;
+        toast.success(`Rocky reported at ${locationName}`);
         fetchCurrentLocation();
+        setSelectedLocation(null);
+        setSelectedRoomId("");
       } else {
         const error = await res.json();
         toast.error(error.message || "Failed to report location");
@@ -120,10 +129,17 @@ export function InteractiveMap({ catId }: { catId: string }) {
     }
   };
 
+  const handleCancelReport = () => {
+    setSelectedLocation(null);
+    setSelectedRoomId("");
+  };
+
   const getRockyPosition = () => {
     if (!currentLocation || currentLocation.exitTime) return null;
 
-    const location = MAP_LOCATIONS.find(loc => loc.id === currentLocation.locationId);
+    const location = locations.find(
+      (loc) => loc.id === currentLocation.locationId,
+    );
     if (!location) return null;
 
     const isOutdoor = location.type === "OUTDOOR";
@@ -134,6 +150,16 @@ export function InteractiveMap({ catId }: { catId: string }) {
   };
 
   const rockyPos = getRockyPosition();
+
+  if (loadingLocations) {
+    return (
+      <Card className="overflow-hidden">
+        <div className="p-8 text-center text-muted-foreground">
+          Loading map...
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="overflow-hidden">
@@ -147,23 +173,23 @@ export function InteractiveMap({ catId }: { catId: string }) {
 
         {/* Clickable regions overlay */}
         <div className="absolute inset-0">
-          {MAP_LOCATIONS.map((location) => (
+          {locations.map((location) => (
             <button
               key={location.id}
               onClick={() => handleLocationClick(location)}
               disabled={isReporting}
               className="absolute border border-primary/30 hover:bg-primary/20 hover:border-primary transition-all rounded-sm group"
               style={{
-                top: location.top,
-                left: location.left,
-                width: location.width,
-                height: location.height,
+                top: location.gridTop,
+                left: location.gridLeft,
+                width: location.gridWidth,
+                height: location.gridHeight,
               }}
               title={location.name}
             >
               {/* Location name tooltip */}
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-background/90 rounded-sm">
-                <span className="text-xs font-mono text-foreground px-2 text-center">
+                <span className="text-xs pixel-font text-foreground px-2 text-center">
                   {location.name}
                 </span>
               </div>
@@ -174,7 +200,7 @@ export function InteractiveMap({ catId }: { catId: string }) {
                   <img
                     src={rockyPos.sprite}
                     alt="Rocky"
-                    className="w-12 h-12 object-contain drop-shadow-lg"
+                    className="w-24 h-24 object-contain drop-shadow-lg"
                   />
                 </div>
               )}
@@ -185,10 +211,12 @@ export function InteractiveMap({ catId }: { catId: string }) {
 
       {/* Map legend */}
       <div className="p-3 bg-muted/30 border-t border-border">
-        <div className="flex items-center justify-between gap-4 text-xs font-mono">
+        <div className="flex items-center justify-between gap-4 text-xs pixel-font">
           <div className="flex items-center gap-2">
             <span className="text-terminal-cyan">◆</span>
-            <span className="text-muted-foreground">Click grid to report location</span>
+            <span className="text-muted-foreground">
+              Click grid to report location
+            </span>
           </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1">
@@ -202,6 +230,57 @@ export function InteractiveMap({ catId }: { catId: string }) {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Dialog */}
+      <Dialog
+        open={selectedLocation !== null}
+        onOpenChange={(open) => !open && handleCancelReport()}
+      >
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <span className="text-terminal-cyan">★</span>
+              Report Prince Rocky's Location
+            </DialogTitle>
+            <DialogDescription>
+              {selectedLocation && selectedLocation.rooms.length > 0
+                ? `Where in ${selectedLocation.name} is Prince Rocky?`
+                : `Confirm that Prince Rocky is at ${selectedLocation?.name}`}
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedLocation && selectedLocation.rooms.length > 0 && (
+            <div className="py-4">
+              <Label className="text-sm font-medium mb-3 block">
+                Select Room:
+              </Label>
+              <RadioGroup value={selectedRoomId} onValueChange={setSelectedRoomId}>
+                {selectedLocation.rooms.map((room) => (
+                  <div key={room.id} className="flex items-center space-x-2 mb-2">
+                    <RadioGroupItem value={room.id} id={`room-${room.id}`} />
+                    <Label htmlFor={`room-${room.id}`} className="cursor-pointer">
+                      {room.name}
+                    </Label>
+                  </div>
+                ))}
+              </RadioGroup>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={handleCancelReport}
+              disabled={isReporting}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleConfirmReport} disabled={isReporting}>
+              {isReporting ? "Reporting..." : "Confirm Report"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

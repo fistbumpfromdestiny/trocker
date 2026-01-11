@@ -9,9 +9,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-// import { CurrentLocationCard } from "@/components/location/current-location-card";
+import { CurrentLocationCard } from "@/components/location/current-location-card";
 import { TimelineList } from "@/components/location/timeline-list";
-// import { LocationReportForm } from "@/components/location/location-report-form";
+import { LocationReportForm } from "@/components/location/location-report-form";
 import { InteractiveMap } from "@/components/location/interactive-map";
 import { AlertCircle } from "lucide-react";
 // import { HungerMeter } from "@/components/hunger/hunger-meter";
@@ -60,7 +60,6 @@ export default function DashboardPage() {
         }
       } catch (error) {
         setTerminalText("Unable to determine Rocky's current location...");
-        console.log(error);
       }
     };
 
@@ -92,7 +91,7 @@ export default function DashboardPage() {
         <div>
           <h1 className="text-3xl md:text-4xl font-bold mb-2">Track Rocky</h1>
           <p className="text-muted-foreground">
-            Follow Rocky&apos;s adventures around the neighborhood
+            Follow Rocky's adventures around the neighborhood
           </p>
         </div>
 
@@ -144,7 +143,7 @@ export default function DashboardPage() {
           ></span>
         </div>
         <p className="text-muted-foreground text-sm">
-          Follow Rocky&apos;s adventures around the neighborhood
+          Follow Rocky's adventures around the neighborhood
         </p>
       </div>
 
@@ -156,11 +155,48 @@ export default function DashboardPage() {
         <InteractiveMap catId="rocky" />
       </div>
 
+      {/* Quick Actions - Mobile First */}
+      <div className="grid gap-4">
+        {/* Current Location */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg">Current Location</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <CurrentLocationCard catId="rocky" />
+          </CardContent>
+        </Card>
+
+        {/* Hunger Status - DISABLED FOR NOW */}
+        {/* <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg">Hunger Level</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <HungerMeter catId="rocky" />
+            <FeedButton catId="rocky" />
+          </CardContent>
+        </Card> */}
+      </div>
+
+      {/* Report Location - Prominent on Mobile */}
+      <Card className="border-primary/50 shadow-md">
+        <CardHeader>
+          <CardTitle>Report Rocky's Location</CardTitle>
+          <CardDescription>
+            Spotted Rocky? Let everyone know where he is!
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <LocationReportForm catId="rocky" />
+        </CardContent>
+      </Card>
+
       {/* Timeline */}
       <Card>
         <CardHeader>
           <CardTitle>Recent Sightings</CardTitle>
-          <CardDescription>Rocky&apos;s location history</CardDescription>
+          <CardDescription>Rocky's location history</CardDescription>
         </CardHeader>
         <CardContent>
           <TimelineList catId="rocky" />
