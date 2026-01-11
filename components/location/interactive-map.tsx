@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import {
@@ -41,19 +42,17 @@ interface CurrentLocation {
 }
 
 export function InteractiveMap({ catId }: { catId: string }) {
-  const [currentLocation, setCurrentLocation] = useState<CurrentLocation | null>(null);
+  const [currentLocation, setCurrentLocation] =
+    useState<CurrentLocation | null>(null);
   const [isReporting, setIsReporting] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState<MapLocation | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<MapLocation | null>(
+    null,
+  );
   const [selectedRoomId, setSelectedRoomId] = useState<string>("");
   const [locations, setLocations] = useState<MapLocation[]>([]);
   const [loadingLocations, setLoadingLocations] = useState(true);
 
-  useEffect(() => {
-    fetchCurrentLocation();
-    fetchLocations();
-  }, []);
-
-  const fetchLocations = async () => {
+  const fetchLocations = useCallback(async () => {
     try {
       const res = await fetch("/api/locations/list");
       if (res.ok) {
@@ -65,9 +64,9 @@ export function InteractiveMap({ catId }: { catId: string }) {
     } finally {
       setLoadingLocations(false);
     }
-  };
+  }, []);
 
-  const fetchCurrentLocation = async () => {
+  const fetchCurrentLocation = useCallback(async () => {
     try {
       const res = await fetch(`/api/locations/current-v2?catId=${catId}`);
       if (res.ok) {
@@ -77,7 +76,12 @@ export function InteractiveMap({ catId }: { catId: string }) {
     } catch (error) {
       console.error("Failed to fetch location:", error);
     }
-  };
+  }, [catId]);
+
+  useEffect(() => {
+    fetchCurrentLocation();
+    fetchLocations();
+  }, [fetchCurrentLocation, fetchLocations]);
 
   const handleLocationClick = (location: MapLocation) => {
     if (isReporting) return;
@@ -110,7 +114,9 @@ export function InteractiveMap({ catId }: { catId: string }) {
       });
 
       if (res.ok) {
-        const selectedRoom = selectedLocation.rooms.find(r => r.id === selectedRoomId);
+        const selectedRoom = selectedLocation.rooms.find(
+          (r) => r.id === selectedRoomId,
+        );
         const locationName = selectedRoom
           ? `${selectedLocation.name} (${selectedRoom.name})`
           : selectedLocation.name;
@@ -124,6 +130,7 @@ export function InteractiveMap({ catId }: { catId: string }) {
       }
     } catch (error) {
       toast.error("Failed to report location");
+      console.log(error);
     } finally {
       setIsReporting(false);
     }
@@ -210,33 +217,33 @@ export function InteractiveMap({ catId }: { catId: string }) {
       </div>
 
       {/* Map legend */}
-      <div className="p-3 bg-muted/30 border-t border-border">
-        <div className="flex items-center justify-between gap-4 text-xs pixel-font">
-          <div className="flex items-center gap-2">
-            <span className="text-terminal-cyan">◆</span>
-            <span className="text-muted-foreground">
-              Click grid to report location
-            </span>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1">
-              <img src="/rocky-motion.png" alt="" className="w-4 h-4" />
-              <span className="text-muted-foreground">Outdoor</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <img src="/rocky-resting.png" alt="" className="w-4 h-4" />
-              <span className="text-muted-foreground">Indoor</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* <div className="p-3 bg-muted/30 border-t border-border"> */}
+      {/*   <div className="flex items-center justify-between gap-4 text-xs pixel-font"> */}
+      {/*     <div className="flex items-center gap-2"> */}
+      {/*       <span className="text-terminal-cyan">◆</span> */}
+      {/*       <span className="text-muted-foreground"> */}
+      {/*         Click grid to report location */}
+      {/*       </span> */}
+      {/*     </div> */}
+      {/*     <div className="flex items-center gap-3"> */}
+      {/*       <div className="flex items-center gap-1"> */}
+      {/*         <Image src="/rocky-motion.png" alt="" width={16} height={16} /> */}
+      {/*         <span className="text-muted-foreground">Outdoor</span> */}
+      {/*       </div> */}
+      {/*       <div className="flex items-center gap-1"> */}
+      {/*         <Image src="/rocky-resting.png" alt="" width={16} height={16} /> */}
+      {/*         <span className="text-muted-foreground">Indoor</span> */}
+      {/*       </div> */}
+      {/*     </div> */}
+      {/*   </div> */}
+      {/* </div> */}
 
       {/* Confirmation Dialog */}
       <Dialog
         open={selectedLocation !== null}
         onOpenChange={(open) => !open && handleCancelReport()}
       >
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-106.25">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <span className="text-terminal-cyan">★</span>
@@ -254,11 +261,20 @@ export function InteractiveMap({ catId }: { catId: string }) {
               <Label className="text-sm font-medium mb-3 block">
                 Select Room:
               </Label>
-              <RadioGroup value={selectedRoomId} onValueChange={setSelectedRoomId}>
+              <RadioGroup
+                value={selectedRoomId}
+                onValueChange={setSelectedRoomId}
+              >
                 {selectedLocation.rooms.map((room) => (
-                  <div key={room.id} className="flex items-center space-x-2 mb-2">
+                  <div
+                    key={room.id}
+                    className="flex items-center space-x-2 mb-2"
+                  >
                     <RadioGroupItem value={room.id} id={`room-${room.id}`} />
-                    <Label htmlFor={`room-${room.id}`} className="cursor-pointer">
+                    <Label
+                      htmlFor={`room-${room.id}`}
+                      className="cursor-pointer"
+                    >
                       {room.name}
                     </Label>
                   </div>
