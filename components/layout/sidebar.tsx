@@ -142,10 +142,10 @@ export function Sidebar({ isOpen, onClose, isAdmin, user }: SidebarProps) {
           </nav>
 
           {/* Footer */}
-          <div className="p-2 border-t border-sidebar-border">
+          <div className="p-2 pb-12 border-t border-sidebar-border">
             <button
               onClick={() => signOut({ callbackUrl: "/login" })}
-              className="flex items-center gap-2 px-2 py-2 text-sm text-destructive hover:bg-destructive/10 rounded transition-colors w-full"
+              className="flex items-center gap-2 px-2 py-2 text-sm text-terminal-red hover:bg-terminal-red/10 rounded transition-colors w-full"
             >
               <LogOut className="h-4 w-4" />
               <span>logout</span>

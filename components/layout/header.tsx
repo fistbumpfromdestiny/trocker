@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Sidebar } from "./sidebar";
-import { Menu } from "lucide-react";
+import { Menu, LogOut } from "lucide-react";
 
 interface HeaderProps {
   user: {
@@ -37,10 +39,12 @@ export function Header({ user }: HeaderProps) {
             </Button>
 
             <Link href="/dashboard" className="flex items-center gap-2">
-              <img
+              <Image
                 src="/icon.png"
                 alt="Rocky"
-                className="w-8 h-8 rounded border border-primary"
+                width={32}
+                height={32}
+                className="rounded border border-primary"
               />
               <span className="text-lg font-bold text-primary">trocker</span>
               <span className="hidden sm:inline text-muted-foreground text-xs">
@@ -49,7 +53,7 @@ export function Header({ user }: HeaderProps) {
             </Link>
           </div>
 
-          {/* Right: User info */}
+          {/* Right: User info and logout */}
           <div className="flex items-center gap-3 text-xs">
             <div className="hidden sm:flex items-center gap-2 text-muted-foreground">
               <span className="text-terminal-cyan">$</span>
@@ -58,6 +62,15 @@ export function Header({ user }: HeaderProps) {
                 <span className="text-terminal-yellow font-semibold">[ADMIN]</span>
               )}
             </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => signOut({ callbackUrl: "/login" })}
+              className="text-terminal-red hover:bg-terminal-red/10 hover:text-terminal-red"
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="hidden md:inline ml-2">logout</span>
+            </Button>
             <div className="w-2 h-3 bg-primary terminal-cursor"></div>
           </div>
         </div>
