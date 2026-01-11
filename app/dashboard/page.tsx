@@ -96,20 +96,20 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        <Card className="border-destructive">
+        <Card className="border-terminal-red/50">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-destructive">
+            <CardTitle className="flex items-center gap-2 text-terminal-red">
               <AlertCircle className="h-5 w-5" />
               Database Not Ready
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-terminal-yellow/70">
               The database needs to be set up before you can track Rocky.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <p className="text-sm font-medium mb-2">Steps to get started:</p>
-              <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
+              <p className="text-sm font-medium mb-2 text-terminal-cyan">Steps to get started:</p>
+              <ol className="text-sm text-terminal-green/70 space-y-2 list-decimal list-inside">
                 <li>Make sure PostgreSQL is running</li>
                 <li>
                   Run migrations:{" "}
@@ -143,7 +143,7 @@ export default function DashboardPage() {
             className={`inline-block w-2 h-5 bg-primary ml-1 ${showCursor ? "opacity-100" : "opacity-0"}`}
           ></span>
         </div>
-        <p className="text-muted-foreground text-sm">
+        <p className="text-terminal-green/70 text-sm">
           Follow Rocky&apos;s adventures around the neighborhood
         </p>
       </div>
@@ -159,8 +159,8 @@ export default function DashboardPage() {
       {/* Timeline */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Sightings</CardTitle>
-          <CardDescription>Rocky&apos;s location history</CardDescription>
+          <CardTitle className="text-terminal-cyan">Recent Sightings</CardTitle>
+          <CardDescription className="text-terminal-green/70">Rocky&apos;s location history</CardDescription>
         </CardHeader>
         <CardContent>
           <TimelineList catId="rocky" />

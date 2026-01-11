@@ -28,7 +28,8 @@ export function Sidebar({ isOpen, onClose, isAdmin, user }: SidebarProps) {
   const adminItems = isAdmin
     ? [
         { href: "/dashboard/admin/users", label: "users", icon: Users },
-        { href: "/dashboard/admin/outdoor-locations", label: "locations", icon: MapPin },
+        { href: "/dashboard/admin/apartments", label: "apartments", icon: Building2 },
+        { href: "/dashboard/admin/locations", label: "locations", icon: MapPin },
         { href: "/dashboard/admin/settings", label: "settings", icon: Settings },
       ]
     : [];
