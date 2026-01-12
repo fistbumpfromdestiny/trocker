@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { catId, locationId, roomId } = await request.json();
+    const { catId, locationId, apartmentId } = await request.json();
 
     if (!catId || !locationId) {
       return NextResponse.json(
@@ -35,12 +35,16 @@ export async function POST(request: NextRequest) {
         catId,
         userId: session.user.id,
         locationId,
-        roomId: roomId || null,
+        apartmentId: apartmentId || null,
         entryTime: new Date(),
       },
       include: {
         location: true,
-        room: true,
+        apartment: {
+          include: {
+            user: true,
+          },
+        },
       },
     });
 

@@ -58,12 +58,11 @@ const locations = [
   { externalId: "park-se2", name: "The Horizon Fields", type: "OUTDOOR" as const, top: "83.33%", left: "83.33%", width: "16.67%", height: "16.67%", order: 36 },
 ];
 
-const castleRooms = [
-  { name: "Throne Room", description: "The grand throne room on the sixth floor", order: 1 },
-  { name: "Royal Bedroom", description: "Prince Rocky's private chambers", order: 2 },
-  { name: "Banquet Hall", description: "Where royal feasts are held", order: 3 },
-  { name: "Royal Library", description: "A vast collection of ancient tomes", order: 4 },
-  { name: "Tower Balcony", description: "Overlooking the entire kingdom", order: 5 },
+const castleApartments = [
+  { name: "10A", description: "The grand throne room on the sixth floor", order: 1 },
+  { name: "10B", description: "Prince Rocky's private chambers", order: 2 },
+  { name: "10C", description: "Where royal feasts are held", order: 3 },
+  { name: "10D", description: "A vast collection of ancient tomes", order: 4 },
 ];
 
 async function main() {

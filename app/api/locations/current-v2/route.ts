@@ -13,7 +13,11 @@ export async function GET(request: NextRequest) {
       },
       include: {
         location: true,
-        room: true,
+        apartment: {
+          include: {
+            user: true,
+          },
+        },
       },
       orderBy: {
         entryTime: "desc",
@@ -30,7 +34,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       locationId: currentLocation.locationId,
-      roomId: currentLocation.roomId,
+      apartmentId: currentLocation.apartmentId,
       locationType: currentLocation.location.type,
       exitTime: currentLocation.exitTime,
       entryTime: currentLocation.entryTime,

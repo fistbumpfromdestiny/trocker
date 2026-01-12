@@ -55,7 +55,7 @@ export async function PUT(
 
     const { id } = await params;
     const data = await request.json();
-    const { userId, name, description } = data;
+    const { userId, name, description, locationId, displayOrder } = data;
 
     if (!userId || !name) {
       return NextResponse.json(
@@ -76,12 +76,28 @@ export async function PUT(
       );
     }
 
+    // Verify location exists if provided
+    if (locationId) {
+      const location = await prisma.location.findUnique({
+        where: { id: locationId },
+      });
+
+      if (!location) {
+        return NextResponse.json(
+          { error: "Location not found" },
+          { status: 404 }
+        );
+      }
+    }
+
     const apartment = await prisma.apartment.update({
       where: { id },
       data: {
         userId,
         name,
         description: description || null,
+        locationId: locationId || null,
+        displayOrder: displayOrder !== undefined ? displayOrder : undefined,
         updatedAt: new Date(),
       },
       include: {

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import {
@@ -16,11 +15,16 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
-interface Room {
+interface Apartment {
   id: string;
   name: string;
   description: string | null;
   displayOrder: number;
+  user: {
+    id: string;
+    email: string;
+    name: string | null;
+  };
 }
 
 interface MapLocation {
@@ -32,7 +36,7 @@ interface MapLocation {
   gridLeft: string;
   gridWidth: string;
   gridHeight: string;
-  rooms: Room[];
+  apartments: Apartment[];
 }
 
 interface CurrentLocation {
@@ -48,7 +52,7 @@ export function InteractiveMap({ catId }: { catId: string }) {
   const [selectedLocation, setSelectedLocation] = useState<MapLocation | null>(
     null,
   );
-  const [selectedRoomId, setSelectedRoomId] = useState<string>("");
+  const [selectedApartmentId, setSelectedApartmentId] = useState<string>("");
   const [locations, setLocations] = useState<MapLocation[]>([]);
   const [loadingLocations, setLoadingLocations] = useState(true);
 
@@ -86,18 +90,18 @@ export function InteractiveMap({ catId }: { catId: string }) {
   const handleLocationClick = (location: MapLocation) => {
     if (isReporting) return;
     setSelectedLocation(location);
-    // Pre-select first room if location has rooms
-    if (location.rooms.length > 0) {
-      setSelectedRoomId(location.rooms[0].id);
+    // Pre-select first apartment if location has apartments
+    if (location.apartments.length > 0) {
+      setSelectedApartmentId(location.apartments[0].id);
     }
   };
 
   const handleConfirmReport = async () => {
     if (!selectedLocation || isReporting) return;
 
-    // If location has rooms, ensure one is selected
-    if (selectedLocation.rooms.length > 0 && !selectedRoomId) {
-      toast.error("Please select a room");
+    // If location has apartments, ensure one is selected
+    if (selectedLocation.apartments.length > 0 && !selectedApartmentId) {
+      toast.error("Please select an apartment");
       return;
     }
 
@@ -109,21 +113,21 @@ export function InteractiveMap({ catId }: { catId: string }) {
         body: JSON.stringify({
           catId,
           locationId: selectedLocation.id,
-          roomId: selectedRoomId || null,
+          apartmentId: selectedApartmentId || null,
         }),
       });
 
       if (res.ok) {
-        const selectedRoom = selectedLocation.rooms.find(
-          (r) => r.id === selectedRoomId,
+        const selectedApartment = selectedLocation.apartments.find(
+          (a) => a.id === selectedApartmentId,
         );
-        const locationName = selectedRoom
-          ? `${selectedLocation.name} (${selectedRoom.name})`
+        const locationName = selectedApartment
+          ? `${selectedLocation.name} (${selectedApartment.name})`
           : selectedLocation.name;
         toast.success(`Rocky reported at ${locationName}`);
         fetchCurrentLocation();
         setSelectedLocation(null);
-        setSelectedRoomId("");
+        setSelectedApartmentId("");
       } else {
         const error = await res.json();
         toast.error(error.message || "Failed to report location");
@@ -138,7 +142,7 @@ export function InteractiveMap({ catId }: { catId: string }) {
 
   const handleCancelReport = () => {
     setSelectedLocation(null);
-    setSelectedRoomId("");
+    setSelectedApartmentId("");
   };
 
   const getRockyPosition = () => {
@@ -250,32 +254,35 @@ export function InteractiveMap({ catId }: { catId: string }) {
               Report Prince Rocky's Location
             </DialogTitle>
             <DialogDescription>
-              {selectedLocation && selectedLocation.rooms.length > 0
-                ? `Where in ${selectedLocation.name} is Prince Rocky?`
+              {selectedLocation && selectedLocation.apartments.length > 0
+                ? `Which apartment in ${selectedLocation.name} is Prince Rocky in?`
                 : `Confirm that Prince Rocky is at ${selectedLocation?.name}`}
             </DialogDescription>
           </DialogHeader>
 
-          {selectedLocation && selectedLocation.rooms.length > 0 && (
+          {selectedLocation && selectedLocation.apartments.length > 0 && (
             <div className="py-4">
               <Label className="text-sm font-medium mb-3 block">
-                Select Room:
+                Select Apartment:
               </Label>
               <RadioGroup
-                value={selectedRoomId}
-                onValueChange={setSelectedRoomId}
+                value={selectedApartmentId}
+                onValueChange={setSelectedApartmentId}
               >
-                {selectedLocation.rooms.map((room) => (
+                {selectedLocation.apartments.map((apartment) => (
                   <div
-                    key={room.id}
+                    key={apartment.id}
                     className="flex items-center space-x-2 mb-2"
                   >
-                    <RadioGroupItem value={room.id} id={`room-${room.id}`} />
+                    <RadioGroupItem value={apartment.id} id={`apt-${apartment.id}`} />
                     <Label
-                      htmlFor={`room-${room.id}`}
-                      className="cursor-pointer"
+                      htmlFor={`apt-${apartment.id}`}
+                      className="cursor-pointer flex flex-col"
                     >
-                      {room.name}
+                      <span>{apartment.name}</span>
+                      <span className="text-xs text-muted-foreground">
+                        Owner: {apartment.user.name || apartment.user.email}
+                      </span>
                     </Label>
                   </div>
                 ))}

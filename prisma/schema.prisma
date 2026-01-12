@@ -53,13 +53,19 @@ model Apartment {
   name        String
   description String?
   userId      String
+  locationId  String?  // Optional - apartment is part of a building/location
+  displayOrder Int     @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  locationReports LocationReport[]
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  location           Location?          @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  locationReports    LocationReport[]
+  locationReportsV2  LocationReportV2[]
 
+  @@unique([locationId, name]) // Each apartment name unique within a building
   @@index([userId])
+  @@index([locationId])
 }
 
 model OutdoorLocation {
@@ -128,36 +134,20 @@ model Location {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
-  rooms              Room[]
+  apartments         Apartment[]
   locationReportsNew LocationReportV2[]
 
   @@index([externalId])
   @@index([type])
 }
 
-model Room {
-  id          String   @id @default(cuid())
-  locationId  String
-  name        String   // e.g., "Throne Room", "Royal Bedroom"
-  description String?
-  displayOrder Int     @default(0)
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  location           Location         @relation(fields: [locationId], references: [id], onDelete: Cascade)
-  locationReportsNew LocationReportV2[]
-
-  @@index([locationId])
-}
-
-// New version of LocationReport that uses the Location and Room models
+// New version of LocationReport that uses the Location and Apartment models
 model LocationReportV2 {
-  id         String    @id @default(cuid())
-  catId      String
-  userId     String
-  locationId String
-  roomId     String?   // Optional - only if location has rooms
+  id          String    @id @default(cuid())
+  catId       String
+  userId      String
+  locationId  String
+  apartmentId String?   // Optional - only if location has apartments (buildings)
 
   entryTime  DateTime
   exitTime   DateTime?
@@ -166,13 +156,13 @@ model LocationReportV2 {
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 
-  cat      Cat      @relation(fields: [catId], references: [id], onDelete: Cascade)
-  user     User     @relation(fields: [userId], references: [id])
-  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
-  room     Room?    @relation(fields: [roomId], references: [id], onDelete: SetNull)
+  cat       Cat        @relation(fields: [catId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id])
+  location  Location   @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  apartment Apartment? @relation(fields: [apartmentId], references: [id], onDelete: SetNull)
 
   @@index([catId, entryTime])
   @@index([userId])
   @@index([locationId])
-  @@index([roomId])
+  @@index([apartmentId])
 }

@@ -18,7 +18,16 @@ export async function GET(
     const location = await prisma.location.findUnique({
       where: { id },
       include: {
-        rooms: {
+        apartments: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+                name: true,
+              },
+            },
+          },
           orderBy: { displayOrder: "asc" },
         },
       },

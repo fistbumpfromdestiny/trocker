@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 interface LocationData {
   location: string;
@@ -8,6 +9,7 @@ interface LocationData {
 }
 
 export function StatusBar() {
+  const pathname = usePathname();
   const [locationData, setLocationData] = useState<LocationData>({
     location: "Unknown",
     lastSeen: null,
@@ -44,12 +46,18 @@ export function StatusBar() {
     });
   };
 
+  const getPathDisplay = () => {
+    // Remove /dashboard prefix and format nicely
+    const path = pathname.replace("/dashboard", "") || "/";
+    return `trocker${path === "/" ? "/dashboard" : path}`;
+  };
+
   return (
     <div className="fixed bottom-4 left-4 right-4 h-7 bg-[#252020] border border-border text-xs font-mono flex items-center z-50 shadow-lg overflow-hidden">
       {/* Left section - Path */}
       <div className="bg-primary text-[#2c2525] px-3 h-full flex items-center font-bold gap-1.5">
         <span className="text-base">◆</span>
-        <span>trocker/dashboard</span>
+        <span>{getPathDisplay()}</span>
       </div>
       <div className="text-primary" style={{ fontSize: '1.4em', lineHeight: '0.5', marginLeft: '-1px' }}>▶</div>
 

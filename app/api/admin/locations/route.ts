@@ -12,7 +12,16 @@ export async function GET(request: NextRequest) {
 
     const locations = await prisma.location.findMany({
       include: {
-        rooms: {
+        apartments: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+                name: true,
+              },
+            },
+          },
           orderBy: { displayOrder: "asc" },
         },
       },

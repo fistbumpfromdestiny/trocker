@@ -8,7 +8,16 @@ export async function GET(request: NextRequest) {
         isActive: true,
       },
       include: {
-        rooms: {
+        apartments: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+                name: true,
+              },
+            },
+          },
           orderBy: {
             displayOrder: "asc",
           },

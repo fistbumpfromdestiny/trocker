@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
@@ -39,12 +38,10 @@ export function Header({ user }: HeaderProps) {
             </Button>
 
             <Link href="/dashboard" className="flex items-center gap-2">
-              <Image
+              <img
                 src="/icon.png"
                 alt="Rocky"
-                width={32}
-                height={32}
-                className="rounded border border-primary"
+                className="w-8 h-8 rounded border border-primary"
               />
               <span className="text-lg font-bold text-primary">trocker</span>
               <span className="hidden sm:inline text-muted-foreground text-xs">
@@ -59,7 +56,9 @@ export function Header({ user }: HeaderProps) {
               <span className="text-terminal-cyan">$</span>
               <span className="text-foreground">{user.name || user.email}</span>
               {isAdmin && (
-                <span className="text-terminal-yellow font-semibold">[ADMIN]</span>
+                <span className="text-terminal-yellow font-semibold">
+                  [ADMIN]
+                </span>
               )}
             </div>
             <Button
