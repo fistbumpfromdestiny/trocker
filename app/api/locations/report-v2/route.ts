@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { auth } from "@/app/api/auth/[...nextauth]/route";
+import { locationEvents } from "@/lib/location-events";
 
 export async function POST(request: NextRequest) {
   try {
@@ -46,6 +47,16 @@ export async function POST(request: NextRequest) {
           },
         },
       },
+    });
+
+    // Broadcast location update to all connected clients
+    locationEvents.emit({
+      catId,
+      locationId,
+      apartmentId: apartmentId || null,
+      entryTime: report.entryTime,
+      locationName: report.location.name,
+      apartmentName: report.apartment?.name,
     });
 
     return NextResponse.json(report);

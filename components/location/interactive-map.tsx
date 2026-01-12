@@ -41,6 +41,7 @@ interface MapLocation {
 
 interface CurrentLocation {
   locationId: string;
+  apartmentId?: string | null;
   locationType: string;
   exitTime: string | null;
 }
@@ -85,14 +86,55 @@ export function InteractiveMap({ catId }: { catId: string }) {
   useEffect(() => {
     fetchCurrentLocation();
     fetchLocations();
-  }, [fetchCurrentLocation, fetchLocations]);
+
+    // Subscribe to real-time location updates via SSE
+    const eventSource = new EventSource(`/api/locations/events?catId=${catId}`);
+
+    eventSource.addEventListener("message", (event) => {
+      try {
+        const data = JSON.parse(event.data);
+
+        if (data.type === "location-update") {
+          // Update current location in real-time
+          setCurrentLocation({
+            locationId: data.locationId,
+            apartmentId: data.apartmentId,
+            locationType: data.locationType || "OUTDOOR",
+            exitTime: null,
+          });
+        }
+      } catch (error) {
+        console.error("Error parsing SSE message:", error);
+      }
+    });
+
+    eventSource.addEventListener("error", (error) => {
+      console.error("SSE connection error:", error);
+      eventSource.close();
+    });
+
+    // Cleanup on unmount
+    return () => {
+      eventSource.close();
+    };
+  }, [fetchCurrentLocation, fetchLocations, catId]);
 
   const handleLocationClick = (location: MapLocation) => {
     if (isReporting) return;
     setSelectedLocation(location);
-    // Pre-select first apartment if location has apartments
+
+    // Pre-select apartment if location has apartments
     if (location.apartments.length > 0) {
-      setSelectedApartmentId(location.apartments[0].id);
+      // If Rocky is currently in this location and in a specific apartment, pre-select that apartment
+      if (currentLocation &&
+          currentLocation.locationId === location.id &&
+          currentLocation.apartmentId &&
+          location.apartments.some(apt => apt.id === currentLocation.apartmentId)) {
+        setSelectedApartmentId(currentLocation.apartmentId);
+      } else {
+        // Otherwise pre-select the first apartment
+        setSelectedApartmentId(location.apartments[0].id);
+      }
     }
   };
 

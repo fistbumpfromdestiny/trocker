@@ -16,7 +16,7 @@ export function StatusBar() {
   });
 
   useEffect(() => {
-    // Fetch current location
+    // Fetch current location initially
     const fetchLocation = async () => {
       try {
         const res = await fetch("/api/locations/current-v2?catId=rocky");
@@ -58,8 +58,40 @@ export function StatusBar() {
     };
 
     fetchLocation();
-    const interval = setInterval(fetchLocation, 10000); // Update every 10s
-    return () => clearInterval(interval);
+
+    // Subscribe to real-time updates via SSE
+    const eventSource = new EventSource("/api/locations/events?catId=rocky");
+
+    eventSource.addEventListener("message", (event) => {
+      try {
+        const data = JSON.parse(event.data);
+
+        if (data.type === "location-update") {
+          // Update location in real-time
+          let locationName = data.locationName || "Unknown";
+          if (data.apartmentName) {
+            locationName = `${locationName} (${data.apartmentName})`;
+          }
+
+          setLocationData({
+            location: locationName,
+            lastSeen: data.entryTime ? new Date(data.entryTime) : null,
+          });
+        }
+      } catch (error) {
+        console.error("Error parsing SSE message:", error);
+      }
+    });
+
+    eventSource.addEventListener("error", (error) => {
+      console.error("SSE connection error:", error);
+      eventSource.close();
+    });
+
+    // Cleanup on unmount
+    return () => {
+      eventSource.close();
+    };
   }, []);
 
   const formatTime = (date: Date | null) => {

@@ -66,12 +66,31 @@ export default function DashboardPage() {
 
     runAnimation();
 
+    // Subscribe to real-time updates via SSE
+    const eventSource = new EventSource("/api/locations/events?catId=rocky");
+
+    eventSource.addEventListener("message", (event) => {
+      try {
+        const data = JSON.parse(event.data);
+
+        if (data.type === "location-update") {
+          // Update terminal text when location changes
+          setTerminalText("Rocky's last location determined...");
+        }
+      } catch (error) {
+        console.error("Error parsing SSE message:", error);
+      }
+    });
+
     // Cursor blink
     const cursorInterval = setInterval(() => {
       setShowCursor((prev) => !prev);
     }, 530);
 
-    return () => clearInterval(cursorInterval);
+    return () => {
+      clearInterval(cursorInterval);
+      eventSource.close();
+    };
   }, []);
 
   if (loading) {
