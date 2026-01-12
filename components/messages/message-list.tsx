@@ -1,14 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
-import { Loader2 } from "lucide-react";
+import { Loader2, Pencil, Trash2, Check, X } from "lucide-react";
 
 interface Message {
   id: string;
   content: string;
   createdAt: string;
+  updatedAt: string;
   user: {
     id: string;
     name: string | null;
@@ -17,10 +21,13 @@ interface Message {
 }
 
 export function MessageList() {
+  const { data: session } = useSession();
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState("");
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -48,20 +55,32 @@ export function MessageList() {
         const data = JSON.parse(event.data);
 
         if (data.type === "message") {
-          // Add new message to the top of the list
-          setMessages((prev) => [
-            {
-              id: data.messageId,
-              content: data.content,
-              createdAt: data.createdAt,
-              user: {
-                id: data.userId,
-                name: data.userName,
-                email: data.userEmail,
-              },
+          const newMessage = {
+            id: data.messageId,
+            content: data.content,
+            createdAt: data.createdAt,
+            updatedAt: data.updatedAt || data.createdAt,
+            user: {
+              id: data.userId,
+              name: data.userName,
+              email: data.userEmail,
             },
-            ...prev,
-          ]);
+          };
+
+          setMessages((prev) => {
+            // Check if message already exists (edited message)
+            const existingIndex = prev.findIndex((m) => m.id === data.messageId);
+
+            if (existingIndex !== -1) {
+              // Update existing message
+              const updated = [...prev];
+              updated[existingIndex] = newMessage;
+              return updated;
+            } else {
+              // Add new message to the top
+              return [newMessage, ...prev];
+            }
+          });
         }
       } catch (error) {
         console.error("Error parsing message SSE:", error);
@@ -91,6 +110,65 @@ export function MessageList() {
     }
   };
 
+  const handleStartEdit = (message: Message) => {
+    setEditingId(message.id);
+    setEditContent(message.content);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditContent("");
+  };
+
+  const handleSaveEdit = async (messageId: string) => {
+    if (!editContent.trim()) return;
+
+    try {
+      const res = await fetch(`/api/messages/${messageId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: editContent.trim() }),
+      });
+
+      if (res.ok) {
+        const updated = await res.json();
+        setMessages((prev) =>
+          prev.map((m) => (m.id === messageId ? updated : m))
+        );
+        setEditingId(null);
+        setEditContent("");
+        toast.success("Message updated!");
+      } else {
+        const error = await res.json();
+        toast.error(error.error || "Failed to update message");
+      }
+    } catch (error) {
+      console.error("Failed to update message:", error);
+      toast.error("Failed to update message");
+    }
+  };
+
+  const handleDelete = async (messageId: string) => {
+    if (!confirm("Delete this message?")) return;
+
+    try {
+      const res = await fetch(`/api/messages/${messageId}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        setMessages((prev) => prev.filter((m) => m.id !== messageId));
+        toast.success("Message deleted!");
+      } else {
+        const error = await res.json();
+        toast.error(error.error || "Failed to delete message");
+      }
+    } catch (error) {
+      console.error("Failed to delete message:", error);
+      toast.error("Failed to delete message");
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -109,26 +187,95 @@ export function MessageList() {
 
   return (
     <div className="flex flex-col gap-2 overflow-y-auto max-h-96 pr-2">
-      {messages.map((message) => (
-        <div
-          key={message.id}
-          className="p-3 rounded border border-terminal-green/20 bg-gradient-to-br from-muted/30 to-muted/10 hover:border-terminal-green/40 transition-colors"
-        >
-          <div className="flex items-center gap-2 mb-2">
-            <span className="font-semibold text-terminal-cyan font-mono text-sm">
-              {message.user.name || message.user.email}
-            </span>
-            <span className="text-xs text-terminal-green/70 font-mono">
-              {formatDistanceToNow(new Date(message.createdAt), {
-                addSuffix: true,
-              })}
-            </span>
+      {messages.map((message) => {
+        const isOwnMessage = session?.user?.id === message.user.id;
+        const isEditing = editingId === message.id;
+
+        return (
+          <div
+            key={message.id}
+            className="p-3 rounded border border-terminal-green/20 bg-gradient-to-br from-muted/30 to-muted/10 hover:border-terminal-green/40 transition-colors"
+          >
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-semibold text-terminal-cyan font-mono text-sm">
+                  {message.user.name || message.user.email}
+                </span>
+                <span className="text-xs text-terminal-green/70 font-mono">
+                  {formatDistanceToNow(new Date(message.createdAt), {
+                    addSuffix: true,
+                  })}
+                </span>
+                {message.updatedAt &&
+                  new Date(message.updatedAt).getTime() >
+                    new Date(message.createdAt).getTime() + 1000 && (
+                    <span className="text-xs text-terminal-yellow/70 font-mono italic">
+                      (edited)
+                    </span>
+                  )}
+              </div>
+
+              {isOwnMessage && !isEditing && (
+                <div className="flex gap-1">
+                  <Button
+                    onClick={() => handleStartEdit(message)}
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-terminal-yellow hover:bg-terminal-yellow/10"
+                  >
+                    <Pencil className="h-3 w-3" />
+                  </Button>
+                  <Button
+                    onClick={() => handleDelete(message.id)}
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-terminal-red hover:bg-terminal-red/10"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            {isEditing ? (
+              <div className="flex flex-col gap-2">
+                <Textarea
+                  value={editContent}
+                  onChange={(e) => setEditContent(e.target.value)}
+                  className="font-mono text-sm resize-none border-terminal-cyan/50 focus:border-terminal-cyan bg-background/50 block-cursor"
+                  maxLength={1000}
+                  rows={3}
+                  autoFocus
+                />
+                <div className="flex gap-2 justify-end">
+                  <Button
+                    onClick={handleCancelEdit}
+                    variant="outline"
+                    size="sm"
+                    className="border-terminal-red/30 text-terminal-red hover:bg-terminal-red/10"
+                  >
+                    <X className="h-3 w-3 mr-1" />
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={() => handleSaveEdit(message.id)}
+                    disabled={!editContent.trim()}
+                    size="sm"
+                    className="bg-terminal-green hover:bg-terminal-green/80 text-background"
+                  >
+                    <Check className="h-3 w-3 mr-1" />
+                    Save
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <p className="text-foreground text-sm whitespace-pre-wrap break-words">
+                {message.content}
+              </p>
+            )}
           </div>
-          <p className="text-foreground text-sm whitespace-pre-wrap break-words">
-            {message.content}
-          </p>
-        </div>
-      ))}
+        );
+      })}
 
       {hasMore && (
         <div className="flex justify-center pt-2">

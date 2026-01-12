@@ -7,6 +7,7 @@ export interface MessageEvent {
   userName: string | null;
   userEmail: string;
   createdAt: Date;
+  updatedAt: Date;
 }
 
 class MessageEventEmitter {

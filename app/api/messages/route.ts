@@ -86,6 +86,7 @@ export async function POST(request: NextRequest) {
       userName: message.user.name,
       userEmail: message.user.email,
       createdAt: message.createdAt,
+      updatedAt: message.updatedAt,
     });
 
     return NextResponse.json(message, { status: 201 });

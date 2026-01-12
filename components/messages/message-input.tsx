@@ -44,7 +44,7 @@ export function MessageInput() {
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder="Type your message..."
-        className="flex-1 font-mono text-sm resize-none border-terminal-green/30 focus:border-terminal-cyan bg-background/50"
+        className="flex-1 font-mono text-sm resize-none border-terminal-green/30 focus:border-terminal-cyan bg-background/50 block-cursor"
         maxLength={1000}
         rows={3}
         disabled={sending}
@@ -52,13 +52,15 @@ export function MessageInput() {
       <Button
         type="submit"
         disabled={!content.trim() || sending}
-        className="bg-terminal-cyan hover:bg-terminal-cyan/80 text-background font-mono"
-        size="icon"
+        className="bg-terminal-yellow hover:bg-terminal-yellow/80 text-background font-mono font-bold px-6"
       >
         {sending ? (
-          <span className="animate-pulse">...</span>
+          <span className="animate-pulse">Sending...</span>
         ) : (
-          <Send className="h-4 w-4" />
+          <>
+            <Send className="h-4 w-4 mr-2" />
+            Send
+          </>
         )}
       </Button>
     </form>

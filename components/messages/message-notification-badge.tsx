@@ -80,8 +80,15 @@ export function MessageNotificationBadge() {
           hasUnread
             ? "text-terminal-yellow"
             : "text-terminal-green/50"
-        } text-xl font-bold cursor-pointer hover:scale-110 transition-transform`}
+        } text-2xl font-black cursor-pointer hover:scale-125 transition-transform pixel-exclamation`}
         aria-label={hasUnread ? "Unread messages" : "Messages"}
+        style={{
+          fontFamily: "'Press Start 2P', 'Courier New', monospace",
+          textShadow: hasUnread
+            ? "2px 2px 0px rgba(0, 0, 0, 0.3)"
+            : "none",
+          imageRendering: "pixelated",
+        }}
       >
         !
       </button>

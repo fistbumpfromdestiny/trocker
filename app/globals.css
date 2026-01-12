@@ -197,6 +197,17 @@
     animation: blink 1s infinite;
   }
 
+  /* Cyan cursor for textarea */
+  .block-cursor {
+    caret-color: var(--terminal-cyan);
+  }
+
+  /* Make text selection match theme */
+  .block-cursor::selection {
+    background: var(--terminal-cyan);
+    color: var(--background);
+  }
+
   /* Scanline effect (subtle) */
   body::before {
     content: "";
@@ -219,8 +230,11 @@
 
 @layer utilities {
   .text-terminal-red { color: var(--terminal-red); }
+  .bg-terminal-red { background-color: var(--terminal-red); }
   .text-terminal-green { color: var(--terminal-green); }
+  .bg-terminal-green { background-color: var(--terminal-green); }
   .text-terminal-yellow { color: var(--terminal-yellow); }
+  .bg-terminal-yellow { background-color: var(--terminal-yellow); }
   .text-terminal-blue { color: var(--terminal-blue); }
   .text-terminal-magenta { color: var(--terminal-magenta); }
   .text-terminal-cyan { color: var(--terminal-cyan); }
