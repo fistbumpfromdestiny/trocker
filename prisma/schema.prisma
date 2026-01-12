@@ -29,6 +29,8 @@ model User {
   apartments       Apartment[]
   locationReports  LocationReport[]
   locationReportsV2 LocationReportV2[]
+  messages         Message[]
+  messageRead      MessageRead?
 
   @@index([email])
 }
@@ -165,4 +167,24 @@ model LocationReportV2 {
   @@index([userId])
   @@index([locationId])
   @@index([apartmentId])
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  userId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
+}
+
+model MessageRead {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  lastReadAt DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

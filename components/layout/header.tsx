@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Sidebar } from "./sidebar";
+import { MessageNotificationBadge } from "@/components/messages/message-notification-badge";
 import { Menu, LogOut } from "lucide-react";
 
 interface HeaderProps {
@@ -70,7 +71,7 @@ export function Header({ user }: HeaderProps) {
               <LogOut className="h-4 w-4" />
               <span className="hidden md:inline ml-2">logout</span>
             </Button>
-            <div className="w-2 h-3 bg-primary terminal-cursor"></div>
+            <MessageNotificationBadge />
           </div>
         </div>
       </header>
