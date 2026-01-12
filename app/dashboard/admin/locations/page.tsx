@@ -10,11 +10,17 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { toast } from "sonner";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 
-interface Room {
+interface Apartment {
   id: string;
   name: string;
   description: string | null;
   displayOrder: number;
+  userId: string;
+  user: {
+    id: string;
+    email: string;
+    name: string | null;
+  };
 }
 
 interface Location {
@@ -29,21 +35,23 @@ interface Location {
   gridHeight: string;
   displayOrder: number;
   isActive: boolean;
-  rooms: Room[];
+  apartments: Apartment[];
 }
 
 export default function AdminLocationsPage() {
   const [locations, setLocations] = useState<Location[]>([]);
+  const [users, setUsers] = useState<Array<{id: string, email: string, name: string | null}>>([]);
   const [loading, setLoading] = useState(true);
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [addingRoomToLocation, setAddingRoomToLocation] = useState<string | null>(null);
-  const [newRoom, setNewRoom] = useState({ name: "", description: "" });
-  const [editingRoom, setEditingRoom] = useState<Room | null>(null);
-  const [isRoomDialogOpen, setIsRoomDialogOpen] = useState(false);
+  const [addingApartmentToLocation, setAddingApartmentToLocation] = useState<string | null>(null);
+  const [newApartment, setNewApartment] = useState({ name: "", description: "", userId: "" });
+  const [editingApartment, setEditingApartment] = useState<Apartment | null>(null);
+  const [isApartmentDialogOpen, setIsApartmentDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchLocations();
+    fetchUsers();
   }, []);
 
   const fetchLocations = async () => {
@@ -59,6 +67,18 @@ export default function AdminLocationsPage() {
       toast.error("Failed to fetch locations");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch("/api/admin/users");
+      if (res.ok) {
+        const data = await res.json();
+        setUsers(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch users:", error);
     }
   };
 
@@ -109,81 +129,82 @@ export default function AdminLocationsPage() {
     }
   };
 
-  const handleAddRoom = async (locationId: string) => {
-    if (!newRoom.name.trim()) {
-      toast.error("Room name is required");
+  const handleAddApartment = async (locationId: string) => {
+    if (!newApartment.name.trim() || !newApartment.userId) {
+      toast.error("Apartment name and owner are required");
       return;
     }
 
     try {
-      const res = await fetch("/api/admin/rooms", {
+      const res = await fetch("/api/admin/apartments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           locationId,
-          name: newRoom.name,
-          description: newRoom.description || null,
+          userId: newApartment.userId,
+          name: newApartment.name,
+          description: newApartment.description || null,
           displayOrder: 0,
         }),
       });
 
       if (res.ok) {
-        toast.success("Room added successfully");
-        setNewRoom({ name: "", description: "" });
-        setAddingRoomToLocation(null);
+        toast.success("Apartment added successfully");
+        setNewApartment({ name: "", description: "", userId: "" });
+        setAddingApartmentToLocation(null);
         fetchLocations();
       } else {
-        toast.error("Failed to add room");
+        toast.error("Failed to add apartment");
       }
     } catch (error) {
-      toast.error("Failed to add room");
+      toast.error("Failed to add apartment");
     }
   };
 
-  const handleDeleteRoom = async (roomId: string) => {
-    if (!confirm("Are you sure you want to delete this room?")) return;
+  const handleDeleteApartment = async (apartmentId: string) => {
+    if (!confirm("Are you sure you want to delete this apartment?")) return;
 
     try {
-      const res = await fetch(`/api/admin/rooms/${roomId}`, {
+      const res = await fetch(`/api/admin/apartments/${apartmentId}`, {
         method: "DELETE",
       });
 
       if (res.ok) {
-        toast.success("Room deleted successfully");
+        toast.success("Apartment deleted successfully");
         fetchLocations();
       } else {
-        toast.error("Failed to delete room");
+        toast.error("Failed to delete apartment");
       }
     } catch (error) {
-      toast.error("Failed to delete room");
+      toast.error("Failed to delete apartment");
     }
   };
 
-  const handleEditRoom = (room: Room) => {
-    setEditingRoom(room);
-    setIsRoomDialogOpen(true);
+  const handleEditApartment = (apartment: Apartment) => {
+    setEditingApartment(apartment);
+    setIsApartmentDialogOpen(true);
   };
 
-  const handleSaveRoom = async () => {
-    if (!editingRoom) return;
+  const handleSaveApartment = async () => {
+    if (!editingApartment) return;
 
     try {
-      const res = await fetch(`/api/admin/rooms/${editingRoom.id}`, {
+      const res = await fetch(`/api/admin/apartments/${editingApartment.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editingRoom),
+        body: JSON.stringify(editingApartment),
       });
 
       if (res.ok) {
-        toast.success("Room updated successfully");
+        toast.success("Apartment updated successfully");
         fetchLocations();
-        setIsRoomDialogOpen(false);
-        setEditingRoom(null);
+        setIsApartmentDialogOpen(false);
+        setEditingApartment(null);
       } else {
-        toast.error("Failed to update room");
+        toast.error("Failed to update apartment");
       }
     } catch (error) {
-      toast.error("Failed to update room");
+      toast.error("Failed to update apartment");
     }
   };
 
@@ -195,7 +216,7 @@ export default function AdminLocationsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold mb-2 text-terminal-cyan">Location Management</h1>
-        <p className="text-terminal-green/70">Manage map locations and their rooms</p>
+        <p className="text-terminal-green/70">Manage map locations and their apartments</p>
       </div>
 
       <div className="grid gap-4">
@@ -235,29 +256,32 @@ export default function AdminLocationsPage() {
             <CardContent>
               <div className="space-y-3">
                 <div>
-                  <Label className="text-sm font-semibold text-terminal-green">Rooms ({location.rooms.length})</Label>
-                  {location.rooms.length > 0 ? (
+                  <Label className="text-sm font-semibold text-terminal-green">Apartments ({location.apartments.length})</Label>
+                  {location.apartments.length > 0 ? (
                     <div className="mt-2 space-y-1">
-                      {location.rooms.map((room) => (
-                        <div key={room.id} className="flex items-center justify-between bg-muted p-2 rounded">
+                      {location.apartments.map((apartment) => (
+                        <div key={apartment.id} className="flex items-center justify-between bg-muted p-2 rounded">
                           <div>
-                            <span className="text-sm font-medium">{room.name}</span>
-                            {room.description && (
-                              <p className="text-xs text-muted-foreground">{room.description}</p>
+                            <span className="text-sm font-medium">{apartment.name}</span>
+                            <span className="text-xs text-muted-foreground ml-2">
+                              (Owner: {apartment.user.name || apartment.user.email})
+                            </span>
+                            {apartment.description && (
+                              <p className="text-xs text-muted-foreground">{apartment.description}</p>
                             )}
                           </div>
                           <div className="flex gap-1">
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleEditRoom(room)}
+                              onClick={() => handleEditApartment(apartment)}
                             >
                               <Pencil className="h-3 w-3" />
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleDeleteRoom(room.id)}
+                              onClick={() => handleDeleteApartment(apartment.id)}
                             >
                               <Trash2 className="h-3 w-3" />
                             </Button>
@@ -266,32 +290,47 @@ export default function AdminLocationsPage() {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground mt-1">No rooms yet</p>
+                    <p className="text-sm text-muted-foreground mt-1">No apartments yet</p>
                   )}
                 </div>
 
-                {addingRoomToLocation === location.id ? (
+                {addingApartmentToLocation === location.id ? (
                   <div className="space-y-2 bg-muted p-3 rounded">
+                    <Select
+                      value={newApartment.userId}
+                      onValueChange={(value) => setNewApartment({ ...newApartment, userId: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select owner" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {users.map((user) => (
+                          <SelectItem key={user.id} value={user.id}>
+                            {user.name || user.email}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <Input
-                      placeholder="Room name"
-                      value={newRoom.name}
-                      onChange={(e) => setNewRoom({ ...newRoom, name: e.target.value })}
+                      placeholder="Apartment name (e.g., 10A)"
+                      value={newApartment.name}
+                      onChange={(e) => setNewApartment({ ...newApartment, name: e.target.value })}
                     />
                     <Input
                       placeholder="Description (optional)"
-                      value={newRoom.description}
-                      onChange={(e) => setNewRoom({ ...newRoom, description: e.target.value })}
+                      value={newApartment.description}
+                      onChange={(e) => setNewApartment({ ...newApartment, description: e.target.value })}
                     />
                     <div className="flex gap-2">
-                      <Button size="sm" onClick={() => handleAddRoom(location.id)}>
-                        Save Room
+                      <Button size="sm" onClick={() => handleAddApartment(location.id)}>
+                        Save Apartment
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => {
-                          setAddingRoomToLocation(null);
-                          setNewRoom({ name: "", description: "" });
+                          setAddingApartmentToLocation(null);
+                          setNewApartment({ name: "", description: "", userId: "" });
                         }}
                       >
                         Cancel
@@ -302,10 +341,10 @@ export default function AdminLocationsPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setAddingRoomToLocation(location.id)}
+                    onClick={() => setAddingApartmentToLocation(location.id)}
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    Add Room
+                    Add Apartment
                   </Button>
                 )}
               </div>
@@ -427,22 +466,43 @@ export default function AdminLocationsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Edit Room Dialog */}
-      <Dialog open={isRoomDialogOpen} onOpenChange={setIsRoomDialogOpen}>
+      {/* Edit Apartment Dialog */}
+      <Dialog open={isApartmentDialogOpen} onOpenChange={setIsApartmentDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Edit Room</DialogTitle>
-            <DialogDescription>Update room details</DialogDescription>
+            <DialogTitle>Edit Apartment</DialogTitle>
+            <DialogDescription>Update apartment details</DialogDescription>
           </DialogHeader>
 
-          {editingRoom && (
+          {editingApartment && (
             <div className="space-y-4">
               <div>
-                <Label className="text-terminal-cyan">Room Name</Label>
+                <Label className="text-terminal-yellow">Owner</Label>
+                <Select
+                  value={editingApartment.userId}
+                  onValueChange={(value) =>
+                    setEditingApartment({ ...editingApartment, userId: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {users.map((user) => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {user.name || user.email}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-terminal-cyan">Apartment Name</Label>
                 <Input
-                  value={editingRoom.name}
+                  value={editingApartment.name}
                   onChange={(e) =>
-                    setEditingRoom({ ...editingRoom, name: e.target.value })
+                    setEditingApartment({ ...editingApartment, name: e.target.value })
                   }
                 />
               </div>
@@ -450,9 +510,9 @@ export default function AdminLocationsPage() {
               <div>
                 <Label className="text-terminal-green">Description</Label>
                 <Input
-                  value={editingRoom.description || ""}
+                  value={editingApartment.description || ""}
                   onChange={(e) =>
-                    setEditingRoom({ ...editingRoom, description: e.target.value })
+                    setEditingApartment({ ...editingApartment, description: e.target.value })
                   }
                   placeholder="Optional description"
                 />
@@ -462,10 +522,10 @@ export default function AdminLocationsPage() {
                 <Label className="text-terminal-yellow">Display Order</Label>
                 <Input
                   type="number"
-                  value={editingRoom.displayOrder}
+                  value={editingApartment.displayOrder}
                   onChange={(e) =>
-                    setEditingRoom({
-                      ...editingRoom,
+                    setEditingApartment({
+                      ...editingApartment,
                       displayOrder: parseInt(e.target.value),
                     })
                   }
@@ -475,10 +535,10 @@ export default function AdminLocationsPage() {
           )}
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsRoomDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setIsApartmentDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSaveRoom}>Save Changes</Button>
+            <Button onClick={handleSaveApartment}>Save Changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
