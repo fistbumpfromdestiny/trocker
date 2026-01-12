@@ -41,12 +41,12 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(location, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating outdoor location:', error);
 
-    if (error.name === 'ZodError') {
+    if (error instanceof Error && 'name' in error && error.name === 'ZodError' && 'errors' in error) {
       return NextResponse.json(
-        { error: 'Invalid data', details: error.errors },
+        { error: 'Invalid data', details: (error as { errors: unknown }).errors },
         { status: 400 }
       );
     }

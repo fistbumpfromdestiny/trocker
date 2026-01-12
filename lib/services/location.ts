@@ -107,7 +107,7 @@ export async function getCurrentLocation(catId: string) {
 }
 
 export async function getLocationTimeline(catId: string, limit: number = 50) {
-  return await prisma.locationReport.findMany({
+  return await prisma.locationReportV2.findMany({
     where: { catId },
     include: {
       user: {
@@ -117,8 +117,12 @@ export async function getLocationTimeline(catId: string, limit: number = 50) {
           email: true,
         },
       },
-      apartment: true,
-      outdoorLocation: true,
+      location: true,
+      apartment: {
+        include: {
+          user: true,
+        },
+      },
     },
     orderBy: {
       entryTime: 'desc',

@@ -68,7 +68,12 @@ export default function AdminUsersPage() {
     if (!editingUser) return;
 
     try {
-      const updateData: any = {
+      const updateData: {
+        email: string;
+        name: string | null;
+        role: string;
+        password?: string;
+      } = {
         email: editingUser.email,
         name: editingUser.name,
         role: editingUser.role,

@@ -45,12 +45,12 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(apartment, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating apartment:', error);
 
-    if (error.name === 'ZodError') {
+    if (error instanceof Error && 'name' in error && error.name === 'ZodError' && 'errors' in error) {
       return NextResponse.json(
-        { error: 'Invalid data', details: error.errors },
+        { error: 'Invalid data', details: (error as { errors: unknown }).errors },
         { status: 400 }
       );
     }

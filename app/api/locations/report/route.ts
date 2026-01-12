@@ -20,18 +20,20 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(report, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error reporting location:', error);
 
-    if (error.name === 'ZodError') {
-      return NextResponse.json(
-        { error: 'Invalid data', details: error.errors },
-        { status: 400 }
-      );
-    }
+    if (error instanceof Error) {
+      if ('name' in error && error.name === 'ZodError' && 'errors' in error) {
+        return NextResponse.json(
+          { error: 'Invalid data', details: (error as { errors: unknown }).errors },
+          { status: 400 }
+        );
+      }
 
-    if (error.message.includes('Unauthorized')) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
+      if (error.message.includes('Unauthorized')) {
+        return NextResponse.json({ error: error.message }, { status: 403 });
+      }
     }
 
     return NextResponse.json(

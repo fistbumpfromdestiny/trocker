@@ -58,7 +58,13 @@ export async function PUT(
     const { email, name, role, password } = data;
 
     // Prepare update data
-    const updateData: any = {
+    const updateData: {
+      email: string;
+      name: string | null;
+      role: string;
+      updatedAt: Date;
+      passwordHash?: string;
+    } = {
       email,
       name: name || null,
       role,

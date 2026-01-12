@@ -8,6 +8,17 @@ interface LocationData {
   lastSeen: Date | null;
 }
 
+interface Location {
+  id: string;
+  name: string;
+  apartments?: Apartment[];
+}
+
+interface Apartment {
+  id: string;
+  name: string;
+}
+
 export function StatusBar() {
   const pathname = usePathname();
   const [locationData, setLocationData] = useState<LocationData>({
@@ -27,14 +38,14 @@ export function StatusBar() {
           if (data.locationId) {
             const locationsRes = await fetch("/api/locations/list");
             if (locationsRes.ok) {
-              const locations = await locationsRes.json();
-              const location = locations.find((loc: any) => loc.id === data.locationId);
+              const locations: Location[] = await locationsRes.json();
+              const location = locations.find((loc) => loc.id === data.locationId);
 
               let locationName = location?.name || "Unknown";
 
               // If there's an apartment, include it
               if (data.apartmentId && location) {
-                const apartment = location.apartments?.find((apt: any) => apt.id === data.apartmentId);
+                const apartment = location.apartments?.find((apt) => apt.id === data.apartmentId);
                 if (apartment) {
                   locationName = `${locationName} (${apartment.name})`;
                 }

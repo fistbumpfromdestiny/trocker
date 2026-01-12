@@ -176,15 +176,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Timeline */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-terminal-cyan">Recent Sightings</CardTitle>
-          <CardDescription className="text-terminal-green/70">Rocky&apos;s location history</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <TimelineList catId="rocky" />
-        </CardContent>
-      </Card>
+      <TimelineList catId="rocky" />
     </div>
   );
 }
