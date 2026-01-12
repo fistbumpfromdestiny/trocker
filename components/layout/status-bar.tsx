@@ -19,13 +19,38 @@ export function StatusBar() {
     // Fetch current location
     const fetchLocation = async () => {
       try {
-        const res = await fetch("/api/locations/current?catId=rocky");
+        const res = await fetch("/api/locations/current-v2?catId=rocky");
         if (res.ok) {
           const data = await res.json();
-          setLocationData({
-            location: data.location || "Unknown",
-            lastSeen: data.entryTime ? new Date(data.entryTime) : null,
-          });
+
+          // If we have a location, fetch the location details
+          if (data.locationId) {
+            const locationsRes = await fetch("/api/locations/list");
+            if (locationsRes.ok) {
+              const locations = await locationsRes.json();
+              const location = locations.find((loc: any) => loc.id === data.locationId);
+
+              let locationName = location?.name || "Unknown";
+
+              // If there's an apartment, include it
+              if (data.apartmentId && location) {
+                const apartment = location.apartments?.find((apt: any) => apt.id === data.apartmentId);
+                if (apartment) {
+                  locationName = `${locationName} (${apartment.name})`;
+                }
+              }
+
+              setLocationData({
+                location: locationName,
+                lastSeen: data.entryTime ? new Date(data.entryTime) : null,
+              });
+            }
+          } else {
+            setLocationData({
+              location: "Unknown",
+              lastSeen: null,
+            });
+          }
         }
       } catch (error) {
         console.error("Failed to fetch location:", error);
@@ -61,10 +86,10 @@ export function StatusBar() {
       </div>
       <div className="text-primary" style={{ fontSize: '1.4em', lineHeight: '0.5', marginLeft: '-1px' }}>▶</div>
 
-      {/* Currently at section */}
+      {/* Last spotted at section */}
       <div className="bg-[#363031] text-terminal-cyan px-3 h-full flex items-center gap-1.5 ml-[-1px]">
         <span className="text-base">★</span>
-        <span>Currently at:</span>
+        <span>Last spotted at:</span>
         <span className="text-foreground font-semibold">{locationData.location}</span>
       </div>
       <div className="text-[#363031]" style={{ fontSize: '1.4em', lineHeight: '0.5', marginLeft: '-1px' }}>▶</div>

@@ -46,11 +46,11 @@ export default function DashboardPage() {
 
       // Check if Rocky has a current location
       try {
-        const res = await fetch("/api/locations/current?catId=rocky");
+        const res = await fetch("/api/locations/current-v2?catId=rocky");
         if (res.ok) {
           const data = await res.json();
           // Check if there's a current location (no exitTime)
-          if (data.location && data.exitTime === null) {
+          if (data.locationId && data.exitTime === null) {
             setTerminalText("Rocky's last location determined...");
           } else {
             setTerminalText("Unable to determine Rocky's current location...");
