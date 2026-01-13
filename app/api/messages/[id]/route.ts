@@ -28,11 +28,16 @@ export async function PUT(
       where: { id },
     });
 
+    console.log("Edit attempt - Token ID:", token.id);
+    console.log("Edit attempt - Message user ID:", existingMessage?.userId);
+    console.log("Edit attempt - Match:", existingMessage?.userId === token.id);
+
     if (!existingMessage) {
       return NextResponse.json({ error: "Message not found" }, { status: 404 });
     }
 
     if (existingMessage.userId !== token.id) {
+      console.error("Ownership check failed - User", token.id, "trying to edit message owned by", existingMessage.userId);
       return NextResponse.json(
         { error: "You can only edit your own messages" },
         { status: 403 }
@@ -65,6 +70,7 @@ export async function PUT(
       userEmail: message.user.email,
       createdAt: message.createdAt,
       updatedAt: message.updatedAt,
+      deletedAt: null,
     });
 
     return NextResponse.json(message);
@@ -126,9 +132,33 @@ export async function DELETE(
       );
     }
 
-    // Delete message
-    await prisma.message.delete({
+    // Soft delete message
+    const deletedMessage = await prisma.message.update({
       where: { id },
+      data: {
+        deletedAt: new Date(),
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    // Emit event for real-time broadcast
+    messageEvents.emit({
+      messageId: deletedMessage.id,
+      content: deletedMessage.content,
+      userId: deletedMessage.userId,
+      userName: deletedMessage.user.name,
+      userEmail: deletedMessage.user.email,
+      createdAt: deletedMessage.createdAt,
+      updatedAt: deletedMessage.updatedAt,
+      deletedAt: deletedMessage.deletedAt,
     });
 
     return NextResponse.json({ success: true });

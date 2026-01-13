@@ -17,13 +17,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Trocker - Track Rocky the Cat",
   description: "Track Rocky's adventures around the neighborhood",
-  icons: {
-    icon: [
-      { url: '/icon.svg', type: 'image/svg+xml' },
-      { url: '/icon.png', type: 'image/png' },
-    ],
-    apple: '/icon.png',
-  },
+  icons: [
+    { url: "/icon.svg", type: "image/svg+xml" },
+    { url: "/icon.png", type: "image/png" },
+  ],
 };
 
 export default function RootLayout({

@@ -32,6 +32,7 @@ export async function GET(request: NextRequest) {
         userId: {
           not: token.id, // Exclude own messages
         },
+        deletedAt: null, // Exclude deleted messages
       },
     });
 

@@ -170,15 +170,17 @@ model LocationReportV2 {
 }
 
 model Message {
-  id        String   @id @default(cuid())
-  content   String   @db.Text
+  id        String    @id @default(cuid())
+  content   String    @db.Text
   userId    String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([createdAt])
+  @@index([deletedAt])
 }
 
 model MessageRead {

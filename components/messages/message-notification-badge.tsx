@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import { Mail } from "lucide-react";
 import { MessagesDialog } from "./messages-dialog";
 
 export function MessageNotificationBadge() {
@@ -78,19 +79,26 @@ export function MessageNotificationBadge() {
         onClick={handleOpenDialog}
         className={`${
           hasUnread
-            ? "text-terminal-yellow"
+            ? "text-terminal-yellow animate-pulse"
             : "text-terminal-green/50"
-        } text-2xl font-black cursor-pointer hover:scale-125 transition-transform pixel-exclamation`}
+        } cursor-pointer hover:scale-125 transition-transform relative`}
         aria-label={hasUnread ? "Unread messages" : "Messages"}
         style={{
-          fontFamily: "'Press Start 2P', 'Courier New', monospace",
-          textShadow: hasUnread
-            ? "2px 2px 0px rgba(0, 0, 0, 0.3)"
+          filter: hasUnread
+            ? "drop-shadow(0 0 4px var(--terminal-yellow)) drop-shadow(2px 2px 0px rgba(0, 0, 0, 0.3))"
             : "none",
-          imageRendering: "pixelated",
         }}
       >
-        !
+        <Mail
+          className="h-6 w-6"
+          strokeWidth={2.5}
+          style={{
+            imageRendering: "pixelated",
+          }}
+        />
+        {hasUnread && (
+          <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-terminal-yellow animate-ping" />
+        )}
       </button>
 
       <MessagesDialog

@@ -115,7 +115,7 @@ export function TimelineList({ catId }: TimelineListProps) {
     return "Unknown";
   };
 
-  const getDuration = (entry: Date, exit: Date | null) => {
+  const getDuration = (entry: string, exit: string | null) => {
     if (!exit) return null;
     const minutes = differenceInMinutes(new Date(exit), new Date(entry));
     if (minutes < 60) return `${minutes}m`;
@@ -148,7 +148,7 @@ export function TimelineList({ catId }: TimelineListProps) {
       {/* Collapse/Expand Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-terminal-cyan/10 to-terminal-green/10 border border-terminal-cyan/30 hover:border-terminal-cyan/50 transition-all rounded font-mono"
+        className="w-full flex items-center justify-between p-4 bg-linear-to-r from-terminal-cyan/10 to-terminal-green/10 border border-terminal-cyan/30 hover:border-terminal-cyan/50 transition-all rounded font-mono"
       >
         <div className="flex items-center gap-2">
           <span className="text-terminal-cyan text-lg">▶</span>
@@ -167,7 +167,7 @@ export function TimelineList({ catId }: TimelineListProps) {
 
       {/* Timeline Content */}
       {isExpanded && (
-        <div className="space-y-4 border border-terminal-green/20 rounded p-4 bg-gradient-to-b from-background to-muted/20">
+        <div className="space-y-4 border border-terminal-green/20 rounded p-4 bg-linear-to--b from-background to-muted/20">
           {displayedTimeline.map((report, index) => {
             const Icon = getLocationIcon(report.location?.type || "OUTDOOR");
             const duration = getDuration(report.entryTime, report.exitTime);
@@ -185,7 +185,7 @@ export function TimelineList({ catId }: TimelineListProps) {
                       />
                     </div>
                     {index < displayedTimeline.length - 1 && (
-                      <div className="h-full w-px bg-gradient-to-b from-terminal-cyan/50 to-terminal-green/30 mt-2" />
+                      <div className="h-full w-px bg-linear-to-b from-terminal-cyan/50 to-terminal-green/30 mt-2" />
                     )}
                   </div>
 
@@ -209,7 +209,7 @@ export function TimelineList({ catId }: TimelineListProps) {
 
                     {report.notes && (
                       <p className="text-sm text-terminal-yellow/80 italic mt-1 font-mono">
-                        "{report.notes}"
+                        `&quot;`{report.notes}`&quot;`
                       </p>
                     )}
 

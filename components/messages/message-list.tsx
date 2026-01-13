@@ -13,6 +13,7 @@ interface Message {
   content: string;
   createdAt: string;
   updatedAt: string;
+  deletedAt: string | null;
   user: {
     id: string;
     name: string | null;
@@ -55,11 +56,18 @@ export function MessageList() {
         const data = JSON.parse(event.data);
 
         if (data.type === "message") {
+          // If message is deleted, remove it from the list
+          if (data.deletedAt) {
+            setMessages((prev) => prev.filter((m) => m.id !== data.messageId));
+            return;
+          }
+
           const newMessage = {
             id: data.messageId,
             content: data.content,
             createdAt: data.createdAt,
             updatedAt: data.updatedAt || data.createdAt,
+            deletedAt: data.deletedAt,
             user: {
               id: data.userId,
               name: data.userName,
@@ -123,6 +131,13 @@ export function MessageList() {
   const handleSaveEdit = async (messageId: string) => {
     if (!editContent.trim()) return;
 
+    console.log("Saving edit for message:", messageId);
+    console.log("Session user ID:", session?.user?.id);
+
+    // Exit edit mode immediately
+    setEditingId(null);
+    setEditContent("");
+
     try {
       const res = await fetch(`/api/messages/${messageId}`, {
         method: "PUT",
@@ -130,16 +145,24 @@ export function MessageList() {
         body: JSON.stringify({ content: editContent.trim() }),
       });
 
+      console.log("Edit response status:", res.status);
+
       if (res.ok) {
         const updated = await res.json();
+        console.log("Updated message:", updated);
+        // Update the message immediately with the response
         setMessages((prev) =>
-          prev.map((m) => (m.id === messageId ? updated : m))
+          prev.map((m) => (m.id === messageId ? {
+            ...updated,
+            createdAt: updated.createdAt,
+            updatedAt: updated.updatedAt,
+            deletedAt: updated.deletedAt || null,
+          } : m))
         );
-        setEditingId(null);
-        setEditContent("");
         toast.success("Message updated!");
       } else {
         const error = await res.json();
+        console.error("Edit error response:", error);
         toast.error(error.error || "Failed to update message");
       }
     } catch (error) {

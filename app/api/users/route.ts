@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
-import prisma from '@/lib/db';
+import { prisma } from '@/lib/db';
 import { createUserSchema } from '@/lib/validations/auth';
 import bcrypt from 'bcryptjs';
 

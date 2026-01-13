@@ -21,6 +21,9 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get("offset") || "0");
 
     const messages = await prisma.message.findMany({
+      where: {
+        deletedAt: null, // Only show non-deleted messages
+      },
       take: limit,
       skip: offset,
       orderBy: {
@@ -87,6 +90,7 @@ export async function POST(request: NextRequest) {
       userEmail: message.user.email,
       createdAt: message.createdAt,
       updatedAt: message.updatedAt,
+      deletedAt: null,
     });
 
     return NextResponse.json(message, { status: 201 });

@@ -1,4 +1,4 @@
-import prisma from '@/lib/db';
+import { prisma } from '@/lib/db';
 
 export async function calculateCurrentHunger(catId: string): Promise<number> {
   const cat = await prisma.cat.findUnique({

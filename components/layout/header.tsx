@@ -7,7 +7,7 @@ import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Sidebar } from "./sidebar";
 import { MessageNotificationBadge } from "@/components/messages/message-notification-badge";
-import { Menu, LogOut } from "lucide-react";
+import { Menu } from "lucide-react";
 
 interface HeaderProps {
   user: {
@@ -19,7 +19,6 @@ interface HeaderProps {
 
 export function Header({ user }: HeaderProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const pathname = usePathname();
   const isAdmin = user.role === "ADMIN";
 
   return (
@@ -62,15 +61,6 @@ export function Header({ user }: HeaderProps) {
                 </span>
               )}
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => signOut({ callbackUrl: "/login" })}
-              className="text-terminal-red hover:bg-terminal-red/10 hover:text-terminal-red"
-            >
-              <LogOut className="h-4 w-4" />
-              <span className="hidden md:inline ml-2">logout</span>
-            </Button>
             <MessageNotificationBadge />
           </div>
         </div>
