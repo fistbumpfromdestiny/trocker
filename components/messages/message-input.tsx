@@ -16,15 +16,17 @@ export function MessageInput() {
     if (!content.trim()) return;
 
     setSending(true);
+    const messageContent = content.trim();
+    setContent("");
+
     try {
       const res = await fetch("/api/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: content.trim() }),
+        body: JSON.stringify({ content: messageContent }),
       });
 
       if (res.ok) {
-        setContent("");
         toast.success("Message sent!");
       } else {
         const error = await res.json();

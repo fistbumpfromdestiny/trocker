@@ -19,10 +19,16 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get("limit") || "50");
     const offset = parseInt(searchParams.get("offset") || "0");
+    const before = searchParams.get("before"); // Timestamp to fetch messages before
 
     const messages = await prisma.message.findMany({
       where: {
         deletedAt: null, // Only show non-deleted messages
+        ...(before && {
+          createdAt: {
+            lt: new Date(before), // Messages created before this timestamp
+          },
+        }),
       },
       take: limit,
       skip: offset,

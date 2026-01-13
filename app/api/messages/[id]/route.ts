@@ -28,16 +28,11 @@ export async function PUT(
       where: { id },
     });
 
-    console.log("Edit attempt - Token ID:", token.id);
-    console.log("Edit attempt - Message user ID:", existingMessage?.userId);
-    console.log("Edit attempt - Match:", existingMessage?.userId === token.id);
-
     if (!existingMessage) {
       return NextResponse.json({ error: "Message not found" }, { status: 404 });
     }
 
     if (existingMessage.userId !== token.id) {
-      console.error("Ownership check failed - User", token.id, "trying to edit message owned by", existingMessage.userId);
       return NextResponse.json(
         { error: "You can only edit your own messages" },
         { status: 403 }

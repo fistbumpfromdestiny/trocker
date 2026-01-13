@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter, usePathname } from "next/navigation";
 import { Mail } from "lucide-react";
-import { MessagesDialog } from "./messages-dialog";
 
 export function MessageNotificationBadge() {
   const { data: session } = useSession();
+  const router = useRouter();
+  const pathname = usePathname();
   const [hasUnread, setHasUnread] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
     if (!session?.user?.id) return;
@@ -56,56 +57,54 @@ export function MessageNotificationBadge() {
     };
   }, [session?.user?.id]);
 
-  const handleOpenDialog = () => {
-    setIsDialogOpen(true);
-  };
-
-  const handleMarkRead = async () => {
-    try {
-      await fetch("/api/messages/mark-read", {
-        method: "POST",
-      });
-      setHasUnread(false);
-    } catch (error) {
-      console.error("Failed to mark messages as read:", error);
+  // Mark messages as read when on messages page
+  useEffect(() => {
+    if (pathname === "/messages" && hasUnread) {
+      const markRead = async () => {
+        try {
+          await fetch("/api/messages/mark-read", {
+            method: "POST",
+          });
+          setHasUnread(false);
+        } catch (error) {
+          console.error("Failed to mark messages as read:", error);
+        }
+      };
+      markRead();
     }
+  }, [pathname, hasUnread]);
+
+  const handleClick = () => {
+    router.push("/messages");
   };
 
   if (!session) return null;
 
   return (
-    <>
-      <button
-        onClick={handleOpenDialog}
-        className={`${
-          hasUnread
-            ? "text-terminal-yellow animate-pulse"
-            : "text-terminal-green/50"
-        } cursor-pointer hover:scale-125 transition-transform relative`}
-        aria-label={hasUnread ? "Unread messages" : "Messages"}
+    <button
+      onClick={handleClick}
+      className={`${
+        hasUnread
+          ? "text-terminal-yellow animate-pulse"
+          : "text-terminal-green/50"
+      } cursor-pointer hover:scale-125 transition-transform relative`}
+      aria-label={hasUnread ? "Unread messages" : "Messages"}
+      style={{
+        filter: hasUnread
+          ? "drop-shadow(0 0 4px var(--terminal-yellow)) drop-shadow(2px 2px 0px rgba(0, 0, 0, 0.3))"
+          : "none",
+      }}
+    >
+      <Mail
+        className="h-4 w-4"
+        strokeWidth={2.5}
         style={{
-          filter: hasUnread
-            ? "drop-shadow(0 0 4px var(--terminal-yellow)) drop-shadow(2px 2px 0px rgba(0, 0, 0, 0.3))"
-            : "none",
+          imageRendering: "pixelated",
         }}
-      >
-        <Mail
-          className="h-6 w-6"
-          strokeWidth={2.5}
-          style={{
-            imageRendering: "pixelated",
-          }}
-        />
-        {hasUnread && (
-          <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-terminal-yellow animate-ping" />
-        )}
-      </button>
-
-      <MessagesDialog
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        onMarkRead={handleMarkRead}
       />
-    </>
+      {hasUnread && (
+        <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-terminal-yellow animate-ping" />
+      )}
+    </button>
   );
 }

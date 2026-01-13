@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -29,15 +29,26 @@ export function MessageList() {
   const [hasMore, setHasMore] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const shouldScrollToBottom = useRef(true);
 
+  // Scroll to bottom helper
+  const scrollToBottom = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  };
+
+  // Initial load
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        const res = await fetch("/api/messages?limit=50");
+        const res = await fetch("/api/messages?limit=30");
         if (res.ok) {
           const data = await res.json();
-          setMessages(data);
-          setHasMore(data.length === 50);
+          // API returns newest first, reverse to show oldest first
+          setMessages(data.reverse());
+          setHasMore(data.length === 30);
         }
       } catch (error) {
         console.error("Failed to fetch messages:", error);
@@ -47,8 +58,17 @@ export function MessageList() {
     };
 
     fetchMessages();
+  }, []);
 
-    // Subscribe to SSE for new messages
+  // Scroll to bottom after initial load and when new messages arrive
+  useEffect(() => {
+    if (!loading && shouldScrollToBottom.current) {
+      scrollToBottom();
+    }
+  }, [messages.length, loading]);
+
+  // SSE subscription
+  useEffect(() => {
     const eventSource = new EventSource("/api/messages/events");
 
     eventSource.addEventListener("message", (event) => {
@@ -56,13 +76,13 @@ export function MessageList() {
         const data = JSON.parse(event.data);
 
         if (data.type === "message") {
-          // If message is deleted, remove it from the list
+          // If message is deleted, remove it
           if (data.deletedAt) {
             setMessages((prev) => prev.filter((m) => m.id !== data.messageId));
             return;
           }
 
-          const newMessage = {
+          const newMessage: Message = {
             id: data.messageId,
             content: data.content,
             createdAt: data.createdAt,
@@ -76,17 +96,17 @@ export function MessageList() {
           };
 
           setMessages((prev) => {
-            // Check if message already exists (edited message)
+            // Check if message exists (for edits)
             const existingIndex = prev.findIndex((m) => m.id === data.messageId);
-
             if (existingIndex !== -1) {
-              // Update existing message
+              // Update existing
               const updated = [...prev];
               updated[existingIndex] = newMessage;
               return updated;
             } else {
-              // Add new message to the top
-              return [newMessage, ...prev];
+              // Add new message to bottom
+              shouldScrollToBottom.current = true;
+              return [...prev, newMessage];
             }
           });
         }
@@ -95,21 +115,56 @@ export function MessageList() {
       }
     });
 
+    eventSource.onerror = (error) => {
+      console.error("SSE error:", error);
+    };
+
     return () => {
       eventSource.close();
     };
   }, []);
 
+  // Handle scroll to load older messages
+  const handleScroll = () => {
+    if (!scrollRef.current || loadingMore || !hasMore) return;
+
+    // Check if scrolled to top (within 50px)
+    if (scrollRef.current.scrollTop < 50) {
+      handleLoadMore();
+    }
+
+    // User manually scrolled, don't auto-scroll on new messages
+    const isAtBottom =
+      scrollRef.current.scrollHeight - scrollRef.current.scrollTop <=
+      scrollRef.current.clientHeight + 100;
+    shouldScrollToBottom.current = isAtBottom;
+  };
+
   const handleLoadMore = async () => {
+    if (loadingMore || !hasMore) return;
+
     setLoadingMore(true);
+    const scrollContainer = scrollRef.current;
+    const previousScrollHeight = scrollContainer?.scrollHeight || 0;
+
     try {
+      // Get oldest message date to fetch older ones
+      const oldestMessage = messages[0];
       const res = await fetch(
-        `/api/messages?limit=50&offset=${messages.length}`
+        `/api/messages?limit=30&before=${oldestMessage.createdAt}`
       );
       if (res.ok) {
         const data = await res.json();
-        setMessages((prev) => [...prev, ...data]);
-        setHasMore(data.length === 50);
+        setMessages((prev) => [...data.reverse(), ...prev]);
+        setHasMore(data.length === 30);
+
+        // Maintain scroll position after prepending
+        setTimeout(() => {
+          if (scrollContainer) {
+            const newScrollHeight = scrollContainer.scrollHeight;
+            scrollContainer.scrollTop = newScrollHeight - previousScrollHeight;
+          }
+        }, 0);
       }
     } catch (error) {
       console.error("Failed to load more messages:", error);
@@ -131,10 +186,6 @@ export function MessageList() {
   const handleSaveEdit = async (messageId: string) => {
     if (!editContent.trim()) return;
 
-    console.log("Saving edit for message:", messageId);
-    console.log("Session user ID:", session?.user?.id);
-
-    // Exit edit mode immediately
     setEditingId(null);
     setEditContent("");
 
@@ -145,24 +196,10 @@ export function MessageList() {
         body: JSON.stringify({ content: editContent.trim() }),
       });
 
-      console.log("Edit response status:", res.status);
-
       if (res.ok) {
-        const updated = await res.json();
-        console.log("Updated message:", updated);
-        // Update the message immediately with the response
-        setMessages((prev) =>
-          prev.map((m) => (m.id === messageId ? {
-            ...updated,
-            createdAt: updated.createdAt,
-            updatedAt: updated.updatedAt,
-            deletedAt: updated.deletedAt || null,
-          } : m))
-        );
         toast.success("Message updated!");
       } else {
         const error = await res.json();
-        console.error("Edit error response:", error);
         toast.error(error.error || "Failed to update message");
       }
     } catch (error) {
@@ -180,7 +217,6 @@ export function MessageList() {
       });
 
       if (res.ok) {
-        setMessages((prev) => prev.filter((m) => m.id !== messageId));
         toast.success("Message deleted!");
       } else {
         const error = await res.json();
@@ -209,7 +245,24 @@ export function MessageList() {
   }
 
   return (
-    <div className="flex flex-col gap-2 overflow-y-auto max-h-96 pr-2">
+    <div
+      ref={scrollRef}
+      onScroll={handleScroll}
+      className="flex flex-col gap-2 overflow-y-auto h-full pr-2"
+    >
+      {/* Load More indicator at top */}
+      {loadingMore && (
+        <div className="flex justify-center py-2">
+          <Loader2 className="h-5 w-5 animate-spin text-terminal-cyan" />
+        </div>
+      )}
+      {hasMore && !loadingMore && (
+        <div className="text-center py-2 text-xs text-terminal-green/50 font-mono">
+          Scroll up to load older messages
+        </div>
+      )}
+
+      {/* Messages */}
       {messages.map((message) => {
         const isOwnMessage = session?.user?.id === message.user.id;
         const isEditing = editingId === message.id;
@@ -299,27 +352,6 @@ export function MessageList() {
           </div>
         );
       })}
-
-      {hasMore && (
-        <div className="flex justify-center pt-2">
-          <Button
-            onClick={handleLoadMore}
-            disabled={loadingMore}
-            variant="outline"
-            size="sm"
-            className="border-terminal-cyan/30 hover:border-terminal-cyan hover:bg-terminal-cyan/10 text-terminal-cyan font-mono"
-          >
-            {loadingMore ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                Loading...
-              </>
-            ) : (
-              `Load More (${messages.length} shown)`
-            )}
-          </Button>
-        </div>
-      )}
     </div>
   );
 }
