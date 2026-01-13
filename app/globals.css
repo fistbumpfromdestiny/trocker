@@ -323,4 +323,49 @@
     letter-spacing: 0.05em;
     text-shadow: 0 0 8px currentColor;
   }
+
+  /* Retro scrollbar styling */
+  /* Webkit browsers (Chrome, Safari, Edge) */
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--muted);
+    border-left: 1px solid var(--border);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--terminal-cyan);
+    border: 2px solid var(--muted);
+    border-radius: 0;
+    box-shadow:
+      inset 0 0 4px rgba(133, 218, 204, 0.4),
+      0 0 4px rgba(133, 218, 204, 0.3);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--terminal-bright-cyan);
+    box-shadow:
+      inset 0 0 6px rgba(133, 218, 204, 0.6),
+      0 0 8px rgba(133, 218, 204, 0.5);
+  }
+
+  ::-webkit-scrollbar-thumb:active {
+    background: var(--terminal-yellow);
+    box-shadow:
+      inset 0 0 8px rgba(249, 204, 108, 0.6),
+      0 0 10px rgba(249, 204, 108, 0.5);
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: var(--muted);
+  }
+
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--terminal-cyan) var(--muted);
+  }
 }

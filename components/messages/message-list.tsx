@@ -248,7 +248,7 @@ export function MessageList() {
     <div
       ref={scrollRef}
       onScroll={handleScroll}
-      className="flex flex-col gap-2 overflow-y-auto h-full pr-2"
+      className="flex flex-col overflow-y-auto h-full pr-2"
     >
       {/* Load More indicator at top */}
       {loadingMore && (
@@ -270,85 +270,93 @@ export function MessageList() {
         return (
           <div
             key={message.id}
-            className="p-3 rounded border border-terminal-green/20 bg-gradient-to-br from-muted/30 to-muted/10 hover:border-terminal-green/40 transition-colors"
+            className={`flex ${isOwnMessage ? "justify-end" : "justify-start"} mb-2`}
           >
-            <div className="flex items-center justify-between gap-2 mb-2">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-semibold text-terminal-cyan font-mono text-sm">
-                  {message.user.name || message.user.email}
-                </span>
-                <span className="text-xs text-terminal-green/70 font-mono">
-                  {formatDistanceToNow(new Date(message.createdAt), {
-                    addSuffix: true,
-                  })}
-                </span>
-                {message.updatedAt &&
-                  new Date(message.updatedAt).getTime() >
-                    new Date(message.createdAt).getTime() + 1000 && (
-                    <span className="text-xs text-terminal-yellow/70 font-mono italic">
-                      (edited)
-                    </span>
-                  )}
+            <div
+              className={`max-w-[75%] p-3 rounded ${
+                isOwnMessage
+                  ? "bg-terminal-cyan/20 border border-terminal-cyan/30"
+                  : "bg-muted/40 border border-terminal-green/20"
+              } hover:border-opacity-60 transition-colors`}
+            >
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-semibold text-terminal-cyan font-mono text-xs">
+                    {message.user.name || message.user.email}
+                  </span>
+                  <span className="text-xs text-terminal-green/70 font-mono">
+                    {formatDistanceToNow(new Date(message.createdAt), {
+                      addSuffix: true,
+                    })}
+                  </span>
+                  {message.updatedAt &&
+                    new Date(message.updatedAt).getTime() >
+                      new Date(message.createdAt).getTime() + 1000 && (
+                      <span className="text-xs text-terminal-yellow/70 font-mono italic">
+                        (edited)
+                      </span>
+                    )}
+                </div>
+
+                {isOwnMessage && !isEditing && (
+                  <div className="flex gap-1">
+                    <Button
+                      onClick={() => handleStartEdit(message)}
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 text-terminal-yellow hover:bg-terminal-yellow/10"
+                    >
+                      <Pencil className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      onClick={() => handleDelete(message.id)}
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 text-terminal-red hover:bg-terminal-red/10"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                )}
               </div>
 
-              {isOwnMessage && !isEditing && (
-                <div className="flex gap-1">
-                  <Button
-                    onClick={() => handleStartEdit(message)}
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 text-terminal-yellow hover:bg-terminal-yellow/10"
-                  >
-                    <Pencil className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    onClick={() => handleDelete(message.id)}
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 text-terminal-red hover:bg-terminal-red/10"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
+              {isEditing ? (
+                <div className="flex flex-col gap-2">
+                  <Textarea
+                    value={editContent}
+                    onChange={(e) => setEditContent(e.target.value)}
+                    className="font-mono text-sm resize-none border-terminal-cyan/50 focus:border-terminal-cyan bg-background/50 block-cursor"
+                    maxLength={1000}
+                    rows={3}
+                    autoFocus
+                  />
+                  <div className="flex gap-2 justify-end">
+                    <Button
+                      onClick={handleCancelEdit}
+                      variant="outline"
+                      size="sm"
+                      className="border-terminal-red/30 text-terminal-red hover:bg-terminal-red/10"
+                    >
+                      <X className="h-3 w-3 mr-1" />
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={() => handleSaveEdit(message.id)}
+                      disabled={!editContent.trim()}
+                      size="sm"
+                      className="bg-terminal-green hover:bg-terminal-green/80 text-background"
+                    >
+                      <Check className="h-3 w-3 mr-1" />
+                      Save
+                    </Button>
+                  </div>
                 </div>
+              ) : (
+                <p className="text-foreground text-sm whitespace-pre-wrap break-words">
+                  {message.content}
+                </p>
               )}
             </div>
-
-            {isEditing ? (
-              <div className="flex flex-col gap-2">
-                <Textarea
-                  value={editContent}
-                  onChange={(e) => setEditContent(e.target.value)}
-                  className="font-mono text-sm resize-none border-terminal-cyan/50 focus:border-terminal-cyan bg-background/50 block-cursor"
-                  maxLength={1000}
-                  rows={3}
-                  autoFocus
-                />
-                <div className="flex gap-2 justify-end">
-                  <Button
-                    onClick={handleCancelEdit}
-                    variant="outline"
-                    size="sm"
-                    className="border-terminal-red/30 text-terminal-red hover:bg-terminal-red/10"
-                  >
-                    <X className="h-3 w-3 mr-1" />
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={() => handleSaveEdit(message.id)}
-                    disabled={!editContent.trim()}
-                    size="sm"
-                    className="bg-terminal-green hover:bg-terminal-green/80 text-background"
-                  >
-                    <Check className="h-3 w-3 mr-1" />
-                    Save
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <p className="text-foreground text-sm whitespace-pre-wrap break-words">
-                {message.content}
-              </p>
-            )}
           </div>
         );
       })}
