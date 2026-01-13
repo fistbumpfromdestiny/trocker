@@ -75,6 +75,9 @@ export async function POST(request: NextRequest) {
       data: {
         content: validatedData.content,
         userId: token.id,
+        replyToId: validatedData.replyToId,
+        replyToContent: validatedData.replyToContent,
+        replyToUserName: validatedData.replyToUserName,
       },
       include: {
         user: {
@@ -97,6 +100,9 @@ export async function POST(request: NextRequest) {
       createdAt: message.createdAt,
       updatedAt: message.updatedAt,
       deletedAt: null,
+      replyToId: message.replyToId,
+      replyToContent: message.replyToContent,
+      replyToUserName: message.replyToUserName,
     });
 
     return NextResponse.json(message, { status: 201 });

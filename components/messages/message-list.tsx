@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
-import { Loader2, Pencil, Trash2, Check, X } from "lucide-react";
+import { Loader2, Pencil, Trash2, Check, X, Reply } from "lucide-react";
 
 interface Message {
   id: string;
@@ -14,6 +14,9 @@ interface Message {
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
+  replyToId?: string | null;
+  replyToContent?: string | null;
+  replyToUserName?: string | null;
   user: {
     id: string;
     name: string | null;
@@ -21,7 +24,11 @@ interface Message {
   };
 }
 
-export function MessageList() {
+interface MessageListProps {
+  onReply?: (message: Message) => void;
+}
+
+export function MessageList({ onReply }: MessageListProps = {}) {
   const { data: session } = useSession();
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
@@ -88,6 +95,9 @@ export function MessageList() {
             createdAt: data.createdAt,
             updatedAt: data.updatedAt || data.createdAt,
             deletedAt: data.deletedAt,
+            replyToId: data.replyToId,
+            replyToContent: data.replyToContent,
+            replyToUserName: data.replyToUserName,
             user: {
               id: data.userId,
               name: data.userName,
@@ -298,27 +308,52 @@ export function MessageList() {
                     )}
                 </div>
 
-                {isOwnMessage && !isEditing && (
+                {!isEditing && (
                   <div className="flex gap-1">
                     <Button
-                      onClick={() => handleStartEdit(message)}
+                      onClick={() => onReply?.(message)}
                       variant="ghost"
                       size="icon"
-                      className="h-6 w-6 text-terminal-yellow hover:bg-terminal-yellow/10"
+                      className="h-6 w-6 text-terminal-cyan hover:bg-terminal-cyan/10"
+                      title="Reply"
                     >
-                      <Pencil className="h-3 w-3" />
+                      <Reply className="h-3 w-3" />
                     </Button>
-                    <Button
-                      onClick={() => handleDelete(message.id)}
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 text-terminal-red hover:bg-terminal-red/10"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
+                    {isOwnMessage && (
+                      <>
+                        <Button
+                          onClick={() => handleStartEdit(message)}
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 text-terminal-yellow hover:bg-terminal-yellow/10"
+                        >
+                          <Pencil className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          onClick={() => handleDelete(message.id)}
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 text-terminal-red hover:bg-terminal-red/10"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
+
+              {/* Quoted message */}
+              {message.replyToContent && (
+                <div className="mb-2 pl-3 border-l-2 border-terminal-cyan/50 bg-muted/20 py-1 px-2 rounded text-xs">
+                  <div className="text-terminal-cyan/70 font-semibold mb-0.5">
+                    {message.replyToUserName || "Unknown User"}
+                  </div>
+                  <div className="text-muted-foreground line-clamp-2 italic">
+                    {message.replyToContent}
+                  </div>
+                </div>
+              )}
 
               {isEditing ? (
                 <div className="flex flex-col gap-2">

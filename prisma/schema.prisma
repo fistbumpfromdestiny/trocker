@@ -177,10 +177,16 @@ model Message {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
+  // Reply functionality - store snapshot of original message
+  replyToId      String?  // ID of message being replied to
+  replyToContent String?  @db.Text // Snapshot of original content
+  replyToUserName String? // Snapshot of original sender's name
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([createdAt])
   @@index([deletedAt])
+  @@index([replyToId])
 }
 
 model MessageRead {

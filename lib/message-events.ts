@@ -9,6 +9,9 @@ export interface MessageEvent {
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
+  replyToId?: string | null;
+  replyToContent?: string | null;
+  replyToUserName?: string | null;
 }
 
 class MessageEventEmitter {
