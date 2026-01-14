@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { X, Home, Building2, MapPin, Settings, LogOut, Users, ChevronRight, Mail } from "lucide-react";
+import { X, Home, Building2, MapPin, Settings, LogOut, Users, ChevronRight, Mail, UserCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SidebarProps {
@@ -28,6 +28,7 @@ export function Sidebar({ isOpen, onClose, isAdmin, user }: SidebarProps) {
 
   const adminItems = isAdmin
     ? [
+        { href: "/dashboard/admin/access", label: "user access", icon: UserCheck },
         { href: "/dashboard/admin/users", label: "users", icon: Users },
         { href: "/dashboard/admin/apartments", label: "apartments", icon: Building2 },
         { href: "/dashboard/admin/locations", label: "locations", icon: MapPin },

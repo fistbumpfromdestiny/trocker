@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu, Home, Building2, MapPin, Settings, LogOut, Users } from "lucide-react";
+import { Menu, Home, Building2, MapPin, Settings, LogOut, Users, UserCheck } from "lucide-react";
 
 interface MobileNavProps {
   isAdmin?: boolean;
@@ -30,6 +30,7 @@ export function MobileNav({ isAdmin }: MobileNavProps) {
 
   const adminItems = isAdmin
     ? [
+        { href: "/dashboard/admin/access", label: "User Access", icon: UserCheck },
         { href: "/dashboard/admin/users", label: "Manage Users", icon: Users },
         { href: "/dashboard/admin/outdoor-locations", label: "Outdoor Locations", icon: MapPin },
         { href: "/dashboard/admin/settings", label: "Settings", icon: Settings },

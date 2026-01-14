@@ -38,6 +38,7 @@ export function MessageList({ onReply }: MessageListProps = {}) {
   const [editContent, setEditContent] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const shouldScrollToBottom = useRef(true);
+  const eventSourceRef = useRef<EventSource | null>(null);
 
   // Scroll to bottom helper
   const scrollToBottom = () => {
@@ -76,7 +77,13 @@ export function MessageList({ onReply }: MessageListProps = {}) {
 
   // SSE subscription
   useEffect(() => {
+    // Prevent duplicate connections
+    if (eventSourceRef.current) {
+      return;
+    }
+
     const eventSource = new EventSource("/api/messages/events");
+    eventSourceRef.current = eventSource;
 
     eventSource.addEventListener("message", (event) => {
       try {
@@ -109,15 +116,14 @@ export function MessageList({ onReply }: MessageListProps = {}) {
             // Check if message exists (for edits)
             const existingIndex = prev.findIndex((m) => m.id === data.messageId);
             if (existingIndex !== -1) {
-              // Update existing
+              // Update existing message
               const updated = [...prev];
               updated[existingIndex] = newMessage;
               return updated;
-            } else {
-              // Add new message to bottom
-              shouldScrollToBottom.current = true;
-              return [...prev, newMessage];
             }
+            // Add new message to bottom
+            shouldScrollToBottom.current = true;
+            return [...prev, newMessage];
           });
         }
       } catch (error) {
@@ -131,6 +137,7 @@ export function MessageList({ onReply }: MessageListProps = {}) {
 
     return () => {
       eventSource.close();
+      eventSourceRef.current = null;
     };
   }, []);
 

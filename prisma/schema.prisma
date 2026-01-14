@@ -77,6 +77,52 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+// User invitations sent by admins
+model UserInvite {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  token     String   @unique
+  createdBy String   // Admin who sent the invite
+  status    InviteStatus @default(PENDING)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  usedAt    DateTime?
+
+  @@index([email])
+  @@index([token])
+  @@index([status])
+}
+
+// Pending user applications (OAuth attempts)
+model PendingUser {
+  id                String   @id @default(cuid())
+  email             String   @unique
+  name              String?
+  image             String?
+  provider          String   // "google", etc.
+  providerAccountId String
+  status            ApplicationStatus @default(PENDING)
+  createdAt         DateTime @default(now())
+  reviewedAt        DateTime?
+  reviewedBy        String?  // Admin who approved/rejected
+
+  @@index([email])
+  @@index([status])
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  REVOKED
+}
+
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model Cat {
   id              String    @id @default(cuid())
   name            String
