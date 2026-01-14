@@ -21,7 +21,8 @@ model User {
   id            String      @id @default(cuid())
   email         String      @unique
   name          String?
-  passwordHash  String
+  passwordHash  String?     // Optional - OAuth users won't have passwords
+  image         String?     // Profile image from OAuth provider
   role          Role        @default(USER)
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
@@ -31,8 +32,49 @@ model User {
   locationReportsV2 LocationReportV2[]
   messages         Message[]
   messageRead      MessageRead?
+  accounts         Account[]   // OAuth accounts
+  sessions         Session[]
 
   @@index([email])
+}
+
+// OAuth accounts table (managed by NextAuth)
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
 }
 
 model Cat {

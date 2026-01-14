@@ -1,11 +1,16 @@
 import type { NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import prisma from "@/lib/db";
 import { loginSchema } from "@/lib/validations/auth";
 
 export const authConfig = {
   providers: [
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
     Credentials({
       async authorize(credentials) {
         try {
@@ -41,10 +46,18 @@ export const authConfig = {
     })
   ],
   callbacks: {
-    jwt({ token, user }) {
+    async jwt({ token, user, account }) {
       if (user) {
-        token.role = user.role;
+        token.role = user.role || "USER";
         token.id = user.id;
+
+        // For OAuth users, ensure role is set in database on first login
+        if (account && !user.role) {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { role: "USER" }
+          });
+        }
       }
       return token;
     },
