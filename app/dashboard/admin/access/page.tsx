@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Check, X, Mail, UserPlus, Clock, Ban } from "lucide-react";
+import { formatSwedishDate } from "@/lib/utils/date";
 
 interface PendingUser {
   id: string;
@@ -243,7 +244,7 @@ export default function AdminAccessPage() {
                       <p className="font-medium">{user.name || "No name"}</p>
                       <p className="text-sm text-muted-foreground">{user.email}</p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Applied {new Date(user.createdAt).toLocaleDateString()} via {user.provider}
+                        Applied {formatSwedishDate(user.createdAt)} via {user.provider}
                       </p>
                     </div>
                   </div>
@@ -298,7 +299,7 @@ export default function AdminAccessPage() {
                   <div>
                     <p className="font-medium">{invite.email}</p>
                     <p className="text-xs text-muted-foreground">
-                      Expires {new Date(invite.expiresAt).toLocaleDateString()}
+                      Expires {formatSwedishDate(invite.expiresAt)}
                     </p>
                   </div>
                   <Button
@@ -339,7 +340,7 @@ export default function AdminAccessPage() {
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-xs text-muted-foreground">
-                      Sent {new Date(invite.createdAt).toLocaleDateString()}
+                      Sent {formatSwedishDate(invite.createdAt)}
                     </span>
                     <Badge
                       variant={

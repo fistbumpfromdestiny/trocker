@@ -24,6 +24,7 @@ export function Sidebar({ isOpen, onClose, isAdmin, user }: SidebarProps) {
     { href: "/dashboard", label: "dashboard", icon: Home },
     { href: "/messages", label: "messages", icon: Mail },
     { href: "/dashboard/apartments", label: "apartments", icon: Building2 },
+    { href: "/dashboard/settings", label: "settings", icon: Settings },
   ];
 
   const adminItems = isAdmin
@@ -32,7 +33,7 @@ export function Sidebar({ isOpen, onClose, isAdmin, user }: SidebarProps) {
         { href: "/dashboard/admin/users", label: "users", icon: Users },
         { href: "/dashboard/admin/apartments", label: "apartments", icon: Building2 },
         { href: "/dashboard/admin/locations", label: "locations", icon: MapPin },
-        { href: "/dashboard/admin/settings", label: "settings", icon: Settings },
+        { href: "/dashboard/admin/settings", label: "app settings", icon: Settings },
       ]
     : [];
 

@@ -26,6 +26,7 @@ export function MobileNav({ isAdmin }: MobileNavProps) {
   const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: Home },
     { href: "/dashboard/apartments", label: "My Apartments", icon: Building2 },
+    { href: "/dashboard/settings", label: "Settings", icon: Settings },
   ];
 
   const adminItems = isAdmin
@@ -33,7 +34,7 @@ export function MobileNav({ isAdmin }: MobileNavProps) {
         { href: "/dashboard/admin/access", label: "User Access", icon: UserCheck },
         { href: "/dashboard/admin/users", label: "Manage Users", icon: Users },
         { href: "/dashboard/admin/outdoor-locations", label: "Outdoor Locations", icon: MapPin },
-        { href: "/dashboard/admin/settings", label: "Settings", icon: Settings },
+        { href: "/dashboard/admin/settings", label: "App Settings", icon: Settings },
       ]
     : [];
 
