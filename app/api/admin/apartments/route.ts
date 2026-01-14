@@ -19,6 +19,12 @@ export async function GET(request: NextRequest) {
             name: true,
           },
         },
+        location: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
         _count: {
           select: {
             locationReports: true,
@@ -65,6 +71,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "User not found" },
         { status: 404 }
+      );
+    }
+
+    // Check if user already has an apartment (one per user rule)
+    const existingApartment = await prisma.apartment.findUnique({
+      where: { userId },
+    });
+
+    if (existingApartment) {
+      return NextResponse.json(
+        { error: "This user already has an apartment assigned" },
+        { status: 400 }
       );
     }
 

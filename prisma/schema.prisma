@@ -153,8 +153,8 @@ model Apartment {
   locationReports    LocationReport[]
   locationReportsV2  LocationReportV2[]
 
+  @@unique([userId]) // Only one apartment per user
   @@unique([locationId, name]) // Each apartment name unique within a building
-  @@index([userId])
   @@index([locationId])
 }
 

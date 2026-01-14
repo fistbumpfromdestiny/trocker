@@ -22,9 +22,14 @@ interface Apartment {
   userId: string;
   name: string;
   description: string | null;
+  locationId: string | null;
   createdAt: string;
   updatedAt: string;
   user: User;
+  location?: {
+    id: string;
+    name: string;
+  } | null;
   _count: {
     locationReports: number;
   };
@@ -33,6 +38,7 @@ interface Apartment {
 export default function AdminApartmentsPage() {
   const [apartments, setApartments] = useState<Apartment[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [locations, setLocations] = useState<Array<{id: string, name: string}>>([]);
   const [loading, setLoading] = useState(true);
   const [editingApartment, setEditingApartment] = useState<Apartment | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -41,11 +47,13 @@ export default function AdminApartmentsPage() {
     userId: "",
     name: "",
     description: "",
+    locationId: "",
   });
 
   useEffect(() => {
     fetchApartments();
     fetchUsers();
+    fetchLocations();
   }, []);
 
   const fetchApartments = async () => {
@@ -75,6 +83,23 @@ export default function AdminApartmentsPage() {
       console.error("Failed to fetch users:", error);
     }
   };
+
+  const fetchLocations = async () => {
+    try {
+      const res = await fetch("/api/admin/locations");
+      if (res.ok) {
+        const data = await res.json();
+        setLocations(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch locations:", error);
+    }
+  };
+
+  // Get users that don't have an apartment yet
+  const availableUsers = users.filter(
+    user => !apartments.some(apt => apt.userId === user.id)
+  );
 
   const handleEditApartment = (apartment: Apartment) => {
     setEditingApartment(apartment);
@@ -147,7 +172,7 @@ export default function AdminApartmentsPage() {
 
       if (res.ok) {
         toast.success("Apartment created successfully");
-        setNewApartment({ userId: "", name: "", description: "" });
+        setNewApartment({ userId: "", name: "", description: "", locationId: "" });
         setIsAddingApartment(false);
         fetchApartments();
       } else {
@@ -212,6 +237,11 @@ export default function AdminApartmentsPage() {
                 {apartment.description && (
                   <p className="text-sm text-terminal-green/60">{apartment.description}</p>
                 )}
+                {apartment.location && (
+                  <p className="text-sm text-muted-foreground">
+                    Location: <span className="font-medium">{apartment.location.name}</span>
+                  </p>
+                )}
                 <div className="text-sm text-terminal-cyan">
                   <span className="font-semibold">{apartment._count.locationReports}</span> location reports
                 </div>
@@ -273,6 +303,31 @@ export default function AdminApartmentsPage() {
                   </SelectContent>
                 </Select>
               </div>
+
+              <div>
+                <Label>Location (Optional)</Label>
+                <Select
+                  value={editingApartment.locationId || "none"}
+                  onValueChange={(value) =>
+                    setEditingApartment({
+                      ...editingApartment,
+                      locationId: value === "none" ? null : value
+                    })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No location</SelectItem>
+                    {locations.map((location) => (
+                      <SelectItem key={location.id} value={location.id}>
+                        {location.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           )}
 
@@ -290,7 +345,9 @@ export default function AdminApartmentsPage() {
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Create New Apartment</DialogTitle>
-            <DialogDescription>Add a new apartment to the building</DialogDescription>
+            <DialogDescription>
+              Add a new apartment to the building. Each user can only have one apartment.
+            </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
@@ -306,11 +363,17 @@ export default function AdminApartmentsPage() {
                   <SelectValue placeholder="Select owner" />
                 </SelectTrigger>
                 <SelectContent>
-                  {users.map((user) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.name || user.email}
-                    </SelectItem>
-                  ))}
+                  {availableUsers.length === 0 ? (
+                    <div className="p-2 text-sm text-muted-foreground text-center">
+                      All users already have apartments
+                    </div>
+                  ) : (
+                    availableUsers.map((user) => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {user.name || user.email}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -336,13 +399,40 @@ export default function AdminApartmentsPage() {
                 placeholder="Optional description"
               />
             </div>
+
+            <div>
+              <Label>Location (Optional)</Label>
+              <Select
+                value={newApartment.locationId || "none"}
+                onValueChange={(value) =>
+                  setNewApartment({ ...newApartment, locationId: value === "none" ? "" : value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select location" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No location</SelectItem>
+                  {locations.map((location) => (
+                    <SelectItem key={location.id} value={location.id}>
+                      {location.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsAddingApartment(false)}>
               Cancel
             </Button>
-            <Button onClick={handleCreateApartment}>Create Apartment</Button>
+            <Button
+              onClick={handleCreateApartment}
+              disabled={availableUsers.length === 0}
+            >
+              Create Apartment
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

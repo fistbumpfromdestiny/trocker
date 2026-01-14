@@ -14,6 +14,14 @@ export async function GET(request: NextRequest) {
     const apartments = await prisma.apartment.findMany({
       where: { userId: token.id },
       orderBy: { createdAt: 'desc' },
+      include: {
+        _count: {
+          select: {
+            locationReports: true,
+            locationReportsV2: true,
+          }
+        }
+      }
     });
 
     return NextResponse.json(apartments);

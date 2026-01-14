@@ -16,6 +16,7 @@ interface Apartment {
   description: string | null;
   displayOrder: number;
   userId: string;
+  locationId: string | null;
   user: {
     id: string;
     email: string;
@@ -41,6 +42,7 @@ interface Location {
 export default function AdminLocationsPage() {
   const [locations, setLocations] = useState<Location[]>([]);
   const [users, setUsers] = useState<Array<{id: string, email: string, name: string | null}>>([]);
+  const [allApartments, setAllApartments] = useState<Apartment[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -48,10 +50,17 @@ export default function AdminLocationsPage() {
   const [newApartment, setNewApartment] = useState({ name: "", description: "", userId: "" });
   const [editingApartment, setEditingApartment] = useState<Apartment | null>(null);
   const [isApartmentDialogOpen, setIsApartmentDialogOpen] = useState(false);
+  const [attachingToLocation, setAttachingToLocation] = useState<string | null>(null);
+  const [selectedApartmentId, setSelectedApartmentId] = useState<string>("");
+
+  // Filter state
+  const [filterType, setFilterType] = useState<string>("ALL");
+  const [filterApartmentStatus, setFilterApartmentStatus] = useState<string>("ALL");
 
   useEffect(() => {
     fetchLocations();
     fetchUsers();
+    fetchAllApartments();
   }, []);
 
   const fetchLocations = async () => {
@@ -79,6 +88,18 @@ export default function AdminLocationsPage() {
       }
     } catch (error) {
       console.error("Failed to fetch users:", error);
+    }
+  };
+
+  const fetchAllApartments = async () => {
+    try {
+      const res = await fetch("/api/admin/apartments");
+      if (res.ok) {
+        const data = await res.json();
+        setAllApartments(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch apartments:", error);
     }
   };
 
@@ -198,6 +219,7 @@ export default function AdminLocationsPage() {
       if (res.ok) {
         toast.success("Apartment updated successfully");
         fetchLocations();
+        fetchAllApartments();
         setIsApartmentDialogOpen(false);
         setEditingApartment(null);
       } else {
@@ -207,6 +229,58 @@ export default function AdminLocationsPage() {
       toast.error("Failed to update apartment");
     }
   };
+
+  const handleAttachApartment = async (locationId: string) => {
+    if (!selectedApartmentId) {
+      toast.error("Please select an apartment");
+      return;
+    }
+
+    const apartment = allApartments.find(apt => apt.id === selectedApartmentId);
+    if (!apartment) return;
+
+    try {
+      const res = await fetch(`/api/admin/apartments/${selectedApartmentId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...apartment,
+          locationId,
+        }),
+      });
+
+      if (res.ok) {
+        toast.success("Apartment attached to location");
+        setSelectedApartmentId("");
+        setAttachingToLocation(null);
+        fetchLocations();
+        fetchAllApartments();
+      } else {
+        const data = await res.json();
+        toast.error(data.error || "Failed to attach apartment");
+      }
+    } catch (error) {
+      toast.error("Failed to attach apartment");
+    }
+  };
+
+  // Apply filters
+  const filteredLocations = locations.filter(location => {
+    // Type filter
+    if (filterType !== "ALL" && location.type !== filterType) {
+      return false;
+    }
+
+    // Apartment status filter
+    if (filterApartmentStatus === "WITH" && location.apartments.length === 0) {
+      return false;
+    }
+    if (filterApartmentStatus === "WITHOUT" && location.apartments.length > 0) {
+      return false;
+    }
+
+    return true;
+  });
 
   if (loading) {
     return <div className="p-8">Loading...</div>;
@@ -219,9 +293,75 @@ export default function AdminLocationsPage() {
         <p className="text-terminal-green/70">Manage map locations and their apartments</p>
       </div>
 
+      {/* Filter Controls */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Filters</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <Label className="text-terminal-cyan">Location Type</Label>
+              <Select value={filterType} onValueChange={setFilterType}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">All Types</SelectItem>
+                  <SelectItem value="APARTMENT">Apartment</SelectItem>
+                  <SelectItem value="OUTDOOR">Outdoor</SelectItem>
+                  <SelectItem value="BUILDING_COMMON">Building Common</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex-1">
+              <Label className="text-terminal-green">Apartment Status</Label>
+              <Select value={filterApartmentStatus} onValueChange={setFilterApartmentStatus}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">All Locations</SelectItem>
+                  <SelectItem value="WITH">With Apartments</SelectItem>
+                  <SelectItem value="WITHOUT">Without Apartments</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {(filterType !== "ALL" || filterApartmentStatus !== "ALL") && (
+              <div className="flex items-end">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setFilterType("ALL");
+                    setFilterApartmentStatus("ALL");
+                  }}
+                >
+                  Clear Filters
+                </Button>
+              </div>
+            )}
+          </div>
+
+          <p className="text-sm text-muted-foreground mt-3">
+            Showing {filteredLocations.length} of {locations.length} locations
+          </p>
+        </CardContent>
+      </Card>
+
       <div className="grid gap-4">
-        {locations.map((location) => (
-          <Card key={location.id}>
+        {filteredLocations.length === 0 ? (
+          <Card>
+            <CardContent className="py-8 text-center">
+              <p className="text-muted-foreground">
+                No locations match the selected filters.
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          filteredLocations.map((location) => (
+            <Card key={location.id}>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
@@ -337,20 +477,73 @@ export default function AdminLocationsPage() {
                       </Button>
                     </div>
                   </div>
+                ) : attachingToLocation === location.id ? (
+                  <div className="space-y-2 bg-muted p-3 rounded">
+                    <Label className="text-sm">Attach Existing Apartment</Label>
+                    <Select
+                      value={selectedApartmentId}
+                      onValueChange={setSelectedApartmentId}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select apartment" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {allApartments.filter(apt => !apt.locationId).length === 0 ? (
+                          <div className="p-2 text-sm text-muted-foreground text-center">
+                            No unattached apartments available
+                          </div>
+                        ) : (
+                          allApartments
+                            .filter(apt => !apt.locationId)
+                            .map((apt) => (
+                              <SelectItem key={apt.id} value={apt.id}>
+                                {apt.name} ({apt.user.name || apt.user.email})
+                              </SelectItem>
+                            ))
+                        )}
+                      </SelectContent>
+                    </Select>
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={() => handleAttachApartment(location.id)}>
+                        Attach
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setAttachingToLocation(null);
+                          setSelectedApartmentId("");
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
                 ) : (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setAddingApartmentToLocation(location.id)}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Apartment
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setAddingApartmentToLocation(location.id)}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add New
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setAttachingToLocation(location.id)}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Attach Existing
+                    </Button>
+                  </div>
                 )}
               </div>
             </CardContent>
           </Card>
-        ))}
+          ))
+        )}
       </div>
 
       {/* Edit Location Dialog */}

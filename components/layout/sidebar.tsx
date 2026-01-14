@@ -23,7 +23,6 @@ export function Sidebar({ isOpen, onClose, isAdmin, user }: SidebarProps) {
   const navItems = [
     { href: "/dashboard", label: "dashboard", icon: Home },
     { href: "/messages", label: "messages", icon: Mail },
-    { href: "/dashboard/apartments", label: "apartments", icon: Building2 },
     { href: "/dashboard/settings", label: "settings", icon: Settings },
   ];
 

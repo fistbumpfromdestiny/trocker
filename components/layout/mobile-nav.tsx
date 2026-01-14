@@ -25,7 +25,6 @@ export function MobileNav({ isAdmin }: MobileNavProps) {
 
   const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: Home },
-    { href: "/dashboard/apartments", label: "My Apartments", icon: Building2 },
     { href: "/dashboard/settings", label: "Settings", icon: Settings },
   ];
 
