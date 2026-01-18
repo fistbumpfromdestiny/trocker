@@ -1,4 +1,5 @@
 import type { NextAuthConfig } from "next-auth";
+import { PrismaAdapter } from "@auth/prisma-adapter";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
@@ -6,6 +7,7 @@ import prisma from "@/lib/db";
 import { loginSchema } from "@/lib/validations/auth";
 
 export const authConfig = {
+  adapter: PrismaAdapter(prisma),
   trustHost: true,
   session: {
     strategy: "jwt",
@@ -64,35 +66,8 @@ export const authConfig = {
         });
 
         if (existingUser) {
-          // Check if OAuth account link exists, create if not
-          const existingAccount = await prisma.account.findFirst({
-            where: {
-              userId: existingUser.id,
-              provider: account.provider,
-              providerAccountId: account.providerAccountId,
-            }
-          });
-
-          if (!existingAccount) {
-            // Create the OAuth account link for existing user
-            await prisma.account.create({
-              data: {
-                userId: existingUser.id,
-                type: "oauth",
-                provider: account.provider,
-                providerAccountId: account.providerAccountId,
-                access_token: account.access_token ? String(account.access_token) : null,
-                refresh_token: account.refresh_token ? String(account.refresh_token) : null,
-                expires_at: account.expires_at ? Number(account.expires_at) : null,
-                token_type: account.token_type ? String(account.token_type) : null,
-                scope: account.scope ? String(account.scope) : null,
-                id_token: account.id_token ? String(account.id_token) : null,
-                session_state: account.session_state ? String(account.session_state) : null,
-              }
-            });
-          }
-
-          return true; // User already approved
+          // User exists - PrismaAdapter will handle Account linking automatically
+          return true;
         }
 
         // Check if there's a valid invite for this email
@@ -105,30 +80,13 @@ export const authConfig = {
         });
 
         if (invite) {
-          // Create the user account
+          // Create the user account - PrismaAdapter will handle Account linking
           const newUser = await prisma.user.create({
             data: {
               email: user.email!,
               name: user.name,
               image: user.image,
               role: "USER",
-            }
-          });
-
-          // Create the OAuth account link
-          await prisma.account.create({
-            data: {
-              userId: newUser.id,
-              type: "oauth",
-              provider: account.provider,
-              providerAccountId: account.providerAccountId,
-              access_token: account.access_token ? String(account.access_token) : null,
-              refresh_token: account.refresh_token ? String(account.refresh_token) : null,
-              expires_at: account.expires_at ? Number(account.expires_at) : null,
-              token_type: account.token_type ? String(account.token_type) : null,
-              scope: account.scope ? String(account.scope) : null,
-              id_token: account.id_token ? String(account.id_token) : null,
-              session_state: account.session_state ? String(account.session_state) : null,
             }
           });
 
