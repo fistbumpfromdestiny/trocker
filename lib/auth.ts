@@ -86,7 +86,7 @@ export const authConfig = {
                 token_type: account.token_type,
                 scope: account.scope,
                 id_token: account.id_token,
-                session_state: account.session_state,
+                session_state: typeof account.session_state === 'string' ? account.session_state : null,
               }
             });
           }
@@ -127,7 +127,7 @@ export const authConfig = {
               token_type: account.token_type,
               scope: account.scope,
               id_token: account.id_token,
-              session_state: account.session_state,
+              session_state: typeof account.session_state === 'string' ? account.session_state : null,
             }
           });
 

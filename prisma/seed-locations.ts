@@ -68,8 +68,7 @@ const castleApartments = [
 async function main() {
   console.log("Seeding locations...");
 
-  // Clear existing locations and rooms
-  await prisma.room.deleteMany({});
+  // Clear existing locations
   await prisma.location.deleteMany({});
 
   // Create locations
@@ -89,21 +88,6 @@ async function main() {
     });
 
     console.log(`Created location: ${location.name}`);
-
-    // Add rooms for The Castle
-    if (loc.externalId === "building-10") {
-      for (const room of castleRooms) {
-        await prisma.room.create({
-          data: {
-            locationId: location.id,
-            name: room.name,
-            description: room.description,
-            displayOrder: room.order,
-          },
-        });
-        console.log(`  - Added room: ${room.name}`);
-      }
-    }
   }
 
   console.log(`\nSeeded ${locations.length} locations successfully!`);
