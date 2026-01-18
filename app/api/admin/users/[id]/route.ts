@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { auth } from "@/app/api/auth/[...nextauth]/route";
 import bcrypt from "bcryptjs";
+import { Role } from "@prisma/client";
 
 // GET single user
 export async function GET(
@@ -61,7 +62,7 @@ export async function PUT(
     const updateData: {
       email: string;
       name: string | null;
-      role: string;
+      role: Role;
       updatedAt: Date;
       passwordHash?: string;
     } = {
