@@ -126,9 +126,6 @@ enum ApplicationStatus {
 model Cat {
   id              String    @id @default(cuid())
   name            String
-  hungerLevel     Int       @default(0)
-  lastFedAt       DateTime?
-  lastHungerUpdate DateTime @default(now())
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 

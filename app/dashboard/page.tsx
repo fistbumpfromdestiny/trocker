@@ -9,13 +9,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-// import { CurrentLocationCard } from "@/components/location/current-location-card";
 import { TimelineList } from "@/components/location/timeline-list";
-// import { LocationReportForm } from "@/components/location/location-report-form";
 import { InteractiveMap } from "@/components/location/interactive-map";
 import { AlertCircle } from "lucide-react";
-// import { HungerMeter } from "@/components/hunger/hunger-meter";
-// import { FeedButton } from "@/components/hunger/feed-button";
 
 export default function DashboardPage() {
   const [dbError, setDbError] = useState(false);
@@ -25,7 +21,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     // Check if database is accessible
-    fetch("/api/hunger/status?catId=rocky")
+    fetch("/api/locations/current-v2?catId=rocky")
       .then((res) => {
         if (!res.ok) throw new Error();
         setDbError(false);

@@ -6,7 +6,13 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
 function LoginForm() {
@@ -23,7 +29,9 @@ function LoginForm() {
   // Check for OAuth errors on mount
   useEffect(() => {
     if (authError === "AccessDenied") {
-      setError("Your application is pending admin approval. You'll be notified when approved.");
+      setError(
+        "Your application is pending admin approval. You'll be notified when approved.",
+      );
     }
   }, [authError]);
 
@@ -66,7 +74,9 @@ function LoginForm() {
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-retro-sage/20 via-background to-retro-orange/10">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-3xl font-bold tracking-tight">Trocker</CardTitle>
+          <CardTitle className="text-3xl font-bold tracking-tight">
+            Trocker
+          </CardTitle>
           <CardDescription className="text-base">
             Track Rocky's adventures
           </CardDescription>
@@ -78,7 +88,7 @@ function LoginForm() {
               <Input
                 id="email"
                 type="email"
-                placeholder="admin@trocker.local"
+                placeholder="your.email@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -147,13 +157,6 @@ function LoginForm() {
             </svg>
             Sign in with Google
           </Button>
-
-          <div className="mt-6 text-center text-sm text-muted-foreground">
-            <p>Default credentials:</p>
-            <p className="font-mono text-xs mt-1">
-              admin@trocker.local / admin123
-            </p>
-          </div>
         </CardContent>
       </Card>
     </div>
