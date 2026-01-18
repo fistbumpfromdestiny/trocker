@@ -1,13 +1,21 @@
 import type { NextAuthConfig } from "next-auth";
-import { PrismaAdapter } from "@auth/prisma-adapter";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import prisma from "@/lib/db";
 import { loginSchema } from "@/lib/validations/auth";
 
+// Helper to safely convert OAuth values to string
+function toStringOrNull(value: unknown): string | null {
+  if (value == null) return null;
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  // For objects/arrays, serialize as JSON
+  if (typeof value === 'object') return JSON.stringify(value);
+  return null;
+}
+
 export const authConfig = {
-  adapter: PrismaAdapter(prisma),
   trustHost: true,
   session: {
     strategy: "jwt",
@@ -66,7 +74,34 @@ export const authConfig = {
         });
 
         if (existingUser) {
-          // User exists - PrismaAdapter will handle Account linking automatically
+          // Check if OAuth account link exists, create if not
+          const existingAccount = await prisma.account.findFirst({
+            where: {
+              userId: existingUser.id,
+              provider: account.provider,
+              providerAccountId: account.providerAccountId,
+            }
+          });
+
+          if (!existingAccount) {
+            // Create the OAuth account link for existing user
+            await prisma.account.create({
+              data: {
+                userId: existingUser.id,
+                type: account.type,
+                provider: account.provider,
+                providerAccountId: account.providerAccountId,
+                refresh_token: toStringOrNull(account.refresh_token),
+                access_token: toStringOrNull(account.access_token),
+                expires_at: account.expires_at ? Number(account.expires_at) : null,
+                token_type: toStringOrNull(account.token_type),
+                scope: toStringOrNull(account.scope),
+                id_token: toStringOrNull(account.id_token),
+                session_state: toStringOrNull(account.session_state),
+              }
+            });
+          }
+
           return true;
         }
 
@@ -80,13 +115,30 @@ export const authConfig = {
         });
 
         if (invite) {
-          // Create the user account - PrismaAdapter will handle Account linking
+          // Create the user account
           const newUser = await prisma.user.create({
             data: {
               email: user.email!,
               name: user.name,
               image: user.image,
               role: "USER",
+            }
+          });
+
+          // Create the OAuth account link
+          await prisma.account.create({
+            data: {
+              userId: newUser.id,
+              type: account.type,
+              provider: account.provider,
+              providerAccountId: account.providerAccountId,
+              refresh_token: toStringOrNull(account.refresh_token),
+              access_token: toStringOrNull(account.access_token),
+              expires_at: account.expires_at ? Number(account.expires_at) : null,
+              token_type: toStringOrNull(account.token_type),
+              scope: toStringOrNull(account.scope),
+              id_token: toStringOrNull(account.id_token),
+              session_state: toStringOrNull(account.session_state),
             }
           });
 
