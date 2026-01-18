@@ -6,6 +6,7 @@ import prisma from "@/lib/db";
 import { loginSchema } from "@/lib/validations/auth";
 
 export const authConfig = {
+  trustHost: true,
   session: {
     strategy: "jwt",
   },
@@ -86,7 +87,7 @@ export const authConfig = {
                 token_type: account.token_type,
                 scope: account.scope,
                 id_token: account.id_token,
-                session_state: typeof account.session_state === 'string' ? account.session_state : null,
+                session_state: account.session_state ? String(account.session_state) : null,
               }
             });
           }
@@ -127,7 +128,7 @@ export const authConfig = {
               token_type: account.token_type,
               scope: account.scope,
               id_token: account.id_token,
-              session_state: typeof account.session_state === 'string' ? account.session_state : null,
+              session_state: account.session_state ? String(account.session_state) : null,
             }
           });
 
