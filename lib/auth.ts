@@ -5,16 +5,6 @@ import bcrypt from "bcryptjs";
 import prisma from "@/lib/db";
 import { loginSchema } from "@/lib/validations/auth";
 
-// Helper to safely convert OAuth values to string
-function toStringOrNull(value: unknown): string | null {
-  if (value == null) return null;
-  if (typeof value === 'string') return value;
-  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
-  // For objects/arrays, serialize as JSON
-  if (typeof value === 'object') return JSON.stringify(value);
-  return null;
-}
-
 export const authConfig = {
   trustHost: true,
   session: {
@@ -85,19 +75,20 @@ export const authConfig = {
 
           if (!existingAccount) {
             // Create the OAuth account link for existing user
+            // Only store essential fields to avoid type conversion issues
             await prisma.account.create({
               data: {
                 userId: existingUser.id,
-                type: account.type,
+                type: account.type ?? "oauth",
                 provider: account.provider,
                 providerAccountId: account.providerAccountId,
-                refresh_token: toStringOrNull(account.refresh_token),
-                access_token: toStringOrNull(account.access_token),
-                expires_at: account.expires_at ? Number(account.expires_at) : null,
-                token_type: toStringOrNull(account.token_type),
-                scope: toStringOrNull(account.scope),
-                id_token: toStringOrNull(account.id_token),
-                session_state: toStringOrNull(account.session_state),
+                access_token: typeof account.access_token === 'string' ? account.access_token : null,
+                refresh_token: typeof account.refresh_token === 'string' ? account.refresh_token : null,
+                expires_at: typeof account.expires_at === 'number' ? account.expires_at : null,
+                token_type: typeof account.token_type === 'string' ? account.token_type : null,
+                scope: typeof account.scope === 'string' ? account.scope : null,
+                id_token: typeof account.id_token === 'string' ? account.id_token : null,
+                session_state: typeof account.session_state === 'string' ? account.session_state : null,
               }
             });
           }
@@ -126,19 +117,20 @@ export const authConfig = {
           });
 
           // Create the OAuth account link
+          // Only store essential fields to avoid type conversion issues
           await prisma.account.create({
             data: {
               userId: newUser.id,
-              type: account.type,
+              type: account.type ?? "oauth",
               provider: account.provider,
               providerAccountId: account.providerAccountId,
-              refresh_token: toStringOrNull(account.refresh_token),
-              access_token: toStringOrNull(account.access_token),
-              expires_at: account.expires_at ? Number(account.expires_at) : null,
-              token_type: toStringOrNull(account.token_type),
-              scope: toStringOrNull(account.scope),
-              id_token: toStringOrNull(account.id_token),
-              session_state: toStringOrNull(account.session_state),
+              access_token: typeof account.access_token === 'string' ? account.access_token : null,
+              refresh_token: typeof account.refresh_token === 'string' ? account.refresh_token : null,
+              expires_at: typeof account.expires_at === 'number' ? account.expires_at : null,
+              token_type: typeof account.token_type === 'string' ? account.token_type : null,
+              scope: typeof account.scope === 'string' ? account.scope : null,
+              id_token: typeof account.id_token === 'string' ? account.id_token : null,
+              session_state: typeof account.session_state === 'string' ? account.session_state : null,
             }
           });
 
