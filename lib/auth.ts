@@ -174,13 +174,13 @@ export const authConfig = {
 
       return false;
     },
-    async jwt({ token, user, account, trigger }) {
+    async jwt({ token, user, account }) {
       // Initial sign in
       if (user) {
         // For credentials provider, user object has all fields
         if (account?.provider === "credentials") {
           token.role = user.role;
-          token.id = user.id;
+          token.id = String(user.id);
         }
         // For OAuth providers, fetch user from database
         else if (account?.provider === "google") {
@@ -190,7 +190,7 @@ export const authConfig = {
 
           if (dbUser) {
             token.role = dbUser.role;
-            token.id = dbUser.id;
+            token.id = String(dbUser.id);
           }
         }
       }
@@ -200,7 +200,7 @@ export const authConfig = {
     session({ session, token }) {
       if (session.user && token.role && token.id) {
         session.user.role = token.role;
-        session.user.id = token.id;
+        session.user.id = String(token.id);
       }
       return session;
     }
