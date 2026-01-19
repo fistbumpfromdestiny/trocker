@@ -129,22 +129,14 @@ export function StatusBar() {
       </div>
       <div className="text-primary" style={{ fontSize: '1.4em', lineHeight: '0.5', marginLeft: '-1px' }}>▶</div>
 
-      {/* Last spotted at section */}
-      <div className="bg-[#363031] text-terminal-cyan px-3 h-full flex items-center gap-1.5 ml-[-1px]">
-        <span className="text-base">★</span>
-        <span>Last spotted at:</span>
-        <span className="text-foreground font-semibold">{locationData.location}</span>
-      </div>
-      <div className="text-[#363031]" style={{ fontSize: '1.4em', lineHeight: '0.5', marginLeft: '-1px' }}>▶</div>
-
       {/* Middle section - spacer */}
       <div className="flex-1"></div>
 
-      {/* Spotted at section */}
+      {/* Last spotted time section */}
       <div className="text-secondary" style={{ fontSize: '1.4em', lineHeight: '0.5', transform: 'scaleX(-1)' }}>▶</div>
       <div className="bg-secondary text-[#2c2525] px-3 h-full flex items-center font-semibold gap-1.5 ml-[-1px]">
         <span className="text-base">◷</span>
-        <span>Spotted at: {formatTime(locationData.lastSeen)}</span>
+        <span>{formatTime(locationData.lastSeen)}</span>
       </div>
     </div>
   );

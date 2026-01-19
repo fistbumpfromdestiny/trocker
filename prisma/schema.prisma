@@ -139,20 +139,20 @@ model Apartment {
   id          String   @id @default(cuid())
   name        String
   description String?
-  userId      String
+  userId      String?  // Optional - can create apartments without owners
   locationId  String?  // Optional - apartment is part of a building/location
   displayOrder Int     @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user               User?              @relation(fields: [userId], references: [id], onDelete: Cascade)
   location           Location?          @relation(fields: [locationId], references: [id], onDelete: Cascade)
   locationReports    LocationReport[]
   locationReportsV2  LocationReportV2[]
 
-  @@unique([userId]) // Only one apartment per user
   @@unique([locationId, name]) // Each apartment name unique within a building
   @@index([locationId])
+  @@index([userId])
 }
 
 model OutdoorLocation {

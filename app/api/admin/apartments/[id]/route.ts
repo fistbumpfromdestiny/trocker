@@ -57,23 +57,25 @@ export async function PUT(
     const data = await request.json();
     const { userId, name, description, locationId, displayOrder } = data;
 
-    if (!userId || !name) {
+    if (!name) {
       return NextResponse.json(
-        { error: "User ID and name are required" },
+        { error: "Name is required" },
         { status: 400 }
       );
     }
 
-    // Verify user exists if changing owner
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-    });
+    // Verify user exists if userId is provided
+    if (userId) {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+      });
 
-    if (!user) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
+      if (!user) {
+        return NextResponse.json(
+          { error: "User not found" },
+          { status: 404 }
+        );
+      }
     }
 
     // Verify location exists if provided
@@ -93,7 +95,7 @@ export async function PUT(
     const apartment = await prisma.apartment.update({
       where: { id },
       data: {
-        userId,
+        userId: userId || null,
         name,
         description: description || null,
         locationId: locationId || null,
@@ -101,13 +103,13 @@ export async function PUT(
         updatedAt: new Date(),
       },
       include: {
-        user: {
+        user: userId ? {
           select: {
             id: true,
             email: true,
             name: true,
           },
-        },
+        } : false,
       },
     });
 

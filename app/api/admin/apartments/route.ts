@@ -55,35 +55,25 @@ export async function POST(request: NextRequest) {
     const data = await request.json();
     const { userId, name, description, locationId, displayOrder } = data;
 
-    if (!userId || !name) {
+    if (!name) {
       return NextResponse.json(
-        { error: "User ID and name are required" },
+        { error: "Name is required" },
         { status: 400 }
       );
     }
 
-    // Verify user exists
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-    });
+    // Verify user exists if userId is provided
+    if (userId) {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+      });
 
-    if (!user) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
-    }
-
-    // Check if user already has an apartment (one per user rule)
-    const existingApartment = await prisma.apartment.findUnique({
-      where: { userId },
-    });
-
-    if (existingApartment) {
-      return NextResponse.json(
-        { error: "This user already has an apartment assigned" },
-        { status: 400 }
-      );
+      if (!user) {
+        return NextResponse.json(
+          { error: "User not found" },
+          { status: 404 }
+        );
+      }
     }
 
     // Verify location exists if provided
@@ -102,20 +92,20 @@ export async function POST(request: NextRequest) {
 
     const apartment = await prisma.apartment.create({
       data: {
-        userId,
+        userId: userId || null,
         name,
         description: description || null,
         locationId: locationId || null,
         displayOrder: displayOrder || 0,
       },
       include: {
-        user: {
+        user: userId ? {
           select: {
             id: true,
             email: true,
             name: true,
           },
-        },
+        } : false,
       },
     });
 
