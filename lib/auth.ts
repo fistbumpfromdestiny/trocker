@@ -7,19 +7,9 @@ import { loginSchema } from "@/lib/validations/auth";
 
 export const authConfig = {
   trustHost: true,
+  useSecureCookies: process.env.NEXTAUTH_URL?.startsWith('https://') ?? false,
   session: {
     strategy: "jwt",
-  },
-  cookies: {
-    sessionToken: {
-      name: `${process.env.NODE_ENV === 'production' ? '__Secure-' : ''}next-auth.session-token`,
-      options: {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-        secure: process.env.NODE_ENV === 'production',
-      },
-    },
   },
   providers: [
     ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
