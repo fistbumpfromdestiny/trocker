@@ -68,8 +68,15 @@ function LoginForm() {
         setError("Invalid email or password");
       } else if (result?.ok) {
         console.log('[LOGIN] Success! Redirecting to:', callbackUrl);
-        router.push(callbackUrl);
-        router.refresh();
+
+        // Wait a bit for cookies to be set, then check session
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        const sessionCheck = await fetch('/api/auth/session');
+        const sessionData = await sessionCheck.json();
+        console.log('[LOGIN] Session after sign-in:', sessionData);
+
+        window.location.href = callbackUrl;
       } else {
         console.error('[LOGIN] Unexpected result:', result);
         setError("Login failed. Please try again.");
