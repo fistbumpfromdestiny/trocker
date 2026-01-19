@@ -3,6 +3,8 @@ import { auth } from "@/app/api/auth/[...nextauth]/route";
 import { Header } from "@/components/layout/header";
 import { StatusBar } from "@/components/layout/status-bar";
 
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardLayout({
   children,
 }: {
