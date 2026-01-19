@@ -33,7 +33,7 @@ interface TimelineReport {
     id: string;
     name: string | null;
     email: string;
-  };
+  } | null;
 }
 
 export function TimelineList({ catId }: TimelineListProps) {
@@ -214,7 +214,7 @@ export function TimelineList({ catId }: TimelineListProps) {
                     )}
 
                     <p className="text-xs text-terminal-green/70 mt-1 font-mono">
-                      Reported by {report.user.name || report.user.email}
+                      Reported by {report.user ? (report.user.name || report.user.email) : "Unknown User"}
                     </p>
                   </div>
                 </div>
