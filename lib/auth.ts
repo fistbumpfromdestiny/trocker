@@ -7,7 +7,6 @@ import { loginSchema } from "@/lib/validations/auth";
 
 export const authConfig = {
   trustHost: true,
-  useSecureCookies: process.env.NEXTAUTH_URL?.startsWith('https://') ?? false,
   session: {
     strategy: "jwt",
   },
