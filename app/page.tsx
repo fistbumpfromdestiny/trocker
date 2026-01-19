@@ -1,18 +1,5 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/app/api/auth/[...nextauth]/route";
 
-export const dynamic = 'force-dynamic';
-
-export default async function Home() {
-  console.log('[ROOT] Home function called');
-
-  let session;
-  try {
-    session = await auth();
-    console.log('[ROOT] auth() returned:', { hasSession: !!session, userEmail: session?.user?.email });
-  } catch (error) {
-    console.error('[ROOT] auth() threw error:', error);
-  }
-
+export default function Home() {
   redirect("/dashboard");
 }
