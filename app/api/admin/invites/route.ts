@@ -58,20 +58,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check if there's already a pending invite
-    const existingInvite = await prisma.userInvite.findFirst({
+    // Delete any existing invites for this email (pending, expired, or used)
+    await prisma.userInvite.deleteMany({
       where: {
         email: validatedData.email,
-        status: "PENDING",
       },
     });
-
-    if (existingInvite) {
-      return NextResponse.json(
-        { error: "Pending invite already exists for this email" },
-        { status: 400 }
-      );
-    }
 
     // Generate secure token
     const token = randomBytes(32).toString("hex");

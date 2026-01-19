@@ -11,10 +11,7 @@ export async function GET(request: NextRequest) {
       cookieName: '__Secure-authjs.session-token',
     });
 
-    console.log('[STATS DEBUG] Token:', JSON.stringify(token, null, 2));
-
     if (!token || !token.id) {
-      console.log('[STATS DEBUG] No token or token.id');
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
