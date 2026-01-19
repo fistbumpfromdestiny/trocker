@@ -12,8 +12,8 @@ export async function proxy(request: NextRequest) {
     cookieName: '__Secure-authjs.session-token',
   });
 
-  // Allow access to login page and API routes
-  if (pathname.startsWith('/login') || pathname.startsWith('/api/auth')) {
+  // Allow access to login page and all API routes
+  if (pathname.startsWith('/login') || pathname.startsWith('/api')) {
     return NextResponse.next();
   }
 
