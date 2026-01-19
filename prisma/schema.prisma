@@ -168,7 +168,7 @@ model OutdoorLocation {
 model LocationReport {
   id            String       @id @default(cuid())
   catId         String
-  userId        String
+  userId        String?      // Optional - null if user deleted
   locationType  LocationType
 
   apartmentId       String?
@@ -182,7 +182,7 @@ model LocationReport {
   updatedAt     DateTime     @updatedAt
 
   cat             Cat              @relation(fields: [catId], references: [id], onDelete: Cascade)
-  user            User             @relation(fields: [userId], references: [id])
+  user            User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
   apartment       Apartment?       @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
   outdoorLocation OutdoorLocation? @relation(fields: [outdoorLocationId], references: [id], onDelete: Cascade)
 
@@ -232,7 +232,7 @@ model Location {
 model LocationReportV2 {
   id          String    @id @default(cuid())
   catId       String
-  userId      String
+  userId      String?   // Optional - null if user deleted
   locationId  String
   apartmentId String?   // Optional - only if location has apartments (buildings)
 
@@ -244,7 +244,7 @@ model LocationReportV2 {
   updatedAt  DateTime  @updatedAt
 
   cat       Cat        @relation(fields: [catId], references: [id], onDelete: Cascade)
-  user      User       @relation(fields: [userId], references: [id])
+  user      User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
   location  Location   @relation(fields: [locationId], references: [id], onDelete: Cascade)
   apartment Apartment? @relation(fields: [apartmentId], references: [id], onDelete: SetNull)
 

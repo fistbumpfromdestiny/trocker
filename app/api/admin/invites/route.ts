@@ -3,6 +3,7 @@ import { auth } from "@/app/api/auth/[...nextauth]/route";
 import prisma from "@/lib/db";
 import { sendInviteSchema } from "@/lib/validations/invite";
 import { randomBytes } from "crypto";
+import { sendInviteEmail } from "@/lib/email";
 
 // GET - List all invites
 export async function GET() {
@@ -89,6 +90,16 @@ export async function POST(req: NextRequest) {
         status: "PENDING",
       },
     });
+
+    // Send invite email
+    try {
+      const inviteUrl = `${process.env.NEXTAUTH_URL}/invite/${token}`;
+      await sendInviteEmail(validatedData.email, inviteUrl);
+    } catch (emailError) {
+      console.error("Failed to send invite email:", emailError);
+      // Don't fail the whole request if email fails
+      // The invite is still created and can be resent
+    }
 
     return NextResponse.json(invite);
   } catch (error) {
