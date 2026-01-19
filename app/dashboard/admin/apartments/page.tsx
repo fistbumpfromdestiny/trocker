@@ -19,13 +19,13 @@ interface User {
 
 interface Apartment {
   id: string;
-  userId: string;
+  userId: string | null;
   name: string;
   description: string | null;
   locationId: string | null;
   createdAt: string;
   updatedAt: string;
-  user: User;
+  user: User | null;
   location?: {
     id: string;
     name: string;
@@ -96,10 +96,6 @@ export default function AdminApartmentsPage() {
     }
   };
 
-  // Get users that don't have an apartment yet
-  const availableUsers = users.filter(
-    user => !apartments.some(apt => apt.userId === user.id)
-  );
 
   const handleEditApartment = (apartment: Apartment) => {
     setEditingApartment(apartment);
@@ -158,8 +154,8 @@ export default function AdminApartmentsPage() {
   };
 
   const handleCreateApartment = async () => {
-    if (!newApartment.userId || !newApartment.name.trim()) {
-      toast.error("Owner and apartment name are required");
+    if (!newApartment.name.trim()) {
+      toast.error("Apartment name is required");
       return;
     }
 
@@ -167,7 +163,11 @@ export default function AdminApartmentsPage() {
       const res = await fetch("/api/admin/apartments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newApartment),
+        body: JSON.stringify({
+          ...newApartment,
+          userId: newApartment.userId || null,
+          locationId: newApartment.locationId || null,
+        }),
       });
 
       if (res.ok) {
@@ -211,7 +211,7 @@ export default function AdminApartmentsPage() {
                     {apartment.name}
                   </CardTitle>
                   <CardDescription>
-                    Owner: {apartment.user.name || apartment.user.email} • Created {formatDistanceToNow(new Date(apartment.createdAt))} ago
+                    Owner: {apartment.user ? (apartment.user.name || apartment.user.email) : "No owner"} • Created {formatDistanceToNow(new Date(apartment.createdAt))} ago
                   </CardDescription>
                 </div>
                 <div className="flex gap-2">
@@ -284,17 +284,18 @@ export default function AdminApartmentsPage() {
               </div>
 
               <div>
-                <Label className="text-terminal-yellow">Owner *</Label>
+                <Label className="text-terminal-yellow">Owner</Label>
                 <Select
-                  value={editingApartment.userId}
+                  value={editingApartment.userId || "none"}
                   onValueChange={(value) =>
-                    setEditingApartment({ ...editingApartment, userId: value })
+                    setEditingApartment({ ...editingApartment, userId: value === "none" ? null : value })
                   }
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="none">No owner</SelectItem>
                     {users.map((user) => (
                       <SelectItem key={user.id} value={user.id}>
                         {user.name || user.email}
@@ -346,34 +347,29 @@ export default function AdminApartmentsPage() {
           <DialogHeader>
             <DialogTitle>Create New Apartment</DialogTitle>
             <DialogDescription>
-              Add a new apartment to the building. Each user can only have one apartment.
+              Add a new apartment to the building. You can assign an owner now or later.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div>
-              <Label className="text-terminal-yellow">Owner *</Label>
+              <Label className="text-terminal-yellow">Owner</Label>
               <Select
-                value={newApartment.userId}
+                value={newApartment.userId || "none"}
                 onValueChange={(value) =>
-                  setNewApartment({ ...newApartment, userId: value })
+                  setNewApartment({ ...newApartment, userId: value === "none" ? "" : value })
                 }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select owner" />
                 </SelectTrigger>
                 <SelectContent>
-                  {availableUsers.length === 0 ? (
-                    <div className="p-2 text-sm text-muted-foreground text-center">
-                      All users already have apartments
-                    </div>
-                  ) : (
-                    availableUsers.map((user) => (
-                      <SelectItem key={user.id} value={user.id}>
-                        {user.name || user.email}
-                      </SelectItem>
-                    ))
-                  )}
+                  <SelectItem value="none">No owner</SelectItem>
+                  {users.map((user) => (
+                    <SelectItem key={user.id} value={user.id}>
+                      {user.name || user.email}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -427,10 +423,7 @@ export default function AdminApartmentsPage() {
             <Button variant="outline" onClick={() => setIsAddingApartment(false)}>
               Cancel
             </Button>
-            <Button
-              onClick={handleCreateApartment}
-              disabled={availableUsers.length === 0}
-            >
+            <Button onClick={handleCreateApartment}>
               Create Apartment
             </Button>
           </DialogFooter>

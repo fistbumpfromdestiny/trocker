@@ -136,7 +136,7 @@ export function StatusBar() {
       <div className="text-secondary" style={{ fontSize: '1.4em', lineHeight: '0.5', transform: 'scaleX(-1)' }}>▶</div>
       <div className="bg-secondary text-[#2c2525] px-3 h-full flex items-center font-semibold gap-1.5 ml-[-1px]">
         <span className="text-base">◷</span>
-        <span>{formatTime(locationData.lastSeen)}</span>
+        <span>Spotted: {formatTime(locationData.lastSeen)}</span>
       </div>
     </div>
   );
