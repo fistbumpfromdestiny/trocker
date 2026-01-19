@@ -13,6 +13,7 @@ export async function PUT(
     const token = await getToken({
       req: request,
       secret: process.env.NEXTAUTH_SECRET,
+      cookieName: '__Secure-authjs.session-token',
     });
 
     if (!token || !token.id) {
@@ -103,6 +104,7 @@ export async function DELETE(
     const token = await getToken({
       req: request,
       secret: process.env.NEXTAUTH_SECRET,
+      cookieName: '__Secure-authjs.session-token',
     });
 
     if (!token || !token.id) {
