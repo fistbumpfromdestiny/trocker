@@ -103,13 +103,13 @@ export async function PUT(
         updatedAt: new Date(),
       },
       include: {
-        user: userId ? {
+        user: {
           select: {
             id: true,
             email: true,
             name: true,
           },
-        } : false,
+        },
       },
     });
 

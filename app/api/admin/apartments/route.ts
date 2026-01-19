@@ -99,13 +99,13 @@ export async function POST(request: NextRequest) {
         displayOrder: displayOrder || 0,
       },
       include: {
-        user: userId ? {
+        user: {
           select: {
             id: true,
             email: true,
             name: true,
           },
-        } : false,
+        },
       },
     });
 
