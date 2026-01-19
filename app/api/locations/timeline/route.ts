@@ -4,7 +4,11 @@ import { getLocationTimeline } from '@/lib/services/location';
 
 export async function GET(request: NextRequest) {
   try {
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+      cookieName: '__Secure-authjs.session-token',
+    });
 
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
