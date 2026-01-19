@@ -10,6 +10,17 @@ export const authConfig = {
   session: {
     strategy: "jwt",
   },
+  cookies: {
+    sessionToken: {
+      name: `${process.env.NODE_ENV === 'production' ? '__Secure-' : ''}next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      },
+    },
+  },
   providers: [
     ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
       ? [
@@ -55,8 +66,11 @@ export const authConfig = {
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
+      console.log('[AUTH] signIn callback - provider:', account?.provider, 'user:', user?.email);
+
       // Allow credentials login (existing users with passwords)
       if (account?.provider === "credentials") {
+        console.log('[AUTH] Allowing credentials login');
         return true;
       }
 
@@ -176,36 +190,46 @@ export const authConfig = {
         return false;
       }
 
+      console.log('[AUTH] No provider matched - denying sign-in');
       return false;
     },
     async jwt({ token, user, account }) {
+      console.log('[AUTH] JWT callback - has user:', !!user, 'has token.id:', !!token.id);
+
       // Initial sign in
       if (user) {
+        console.log('[AUTH] JWT - Initial sign in, provider:', account?.provider);
         // For credentials provider, user object has all fields
         if (account?.provider === "credentials") {
+          console.log('[AUTH] JWT - Setting credentials user data');
           token.role = user.role;
           token.id = String(user.id);
         }
         // For OAuth providers, fetch user from database
         else if (account?.provider === "google") {
+          console.log('[AUTH] JWT - Fetching Google user from db');
           const dbUser = await prisma.user.findUnique({
             where: { email: user.email! }
           });
 
           if (dbUser) {
+            console.log('[AUTH] JWT - Setting Google user data');
             token.role = dbUser.role;
             token.id = String(dbUser.id);
           }
         }
       }
 
+      console.log('[AUTH] JWT - Returning token with id:', token.id);
       return token;
     },
     session({ session, token }) {
+      console.log('[AUTH] Session callback - token.id:', token.id, 'token.role:', token.role);
       if (session.user && token.role && token.id) {
         session.user.role = token.role;
         session.user.id = String(token.id);
       }
+      console.log('[AUTH] Session - returning session for user:', session.user?.email);
       return session;
     }
   },
