@@ -5,13 +5,11 @@ import { getToken } from 'next-auth/jwt';
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // NextAuth v5 uses __Secure- prefix for session tokens
   const token = await getToken({
     req: request,
     secret: process.env.NEXTAUTH_SECRET,
-    secureCookie: process.env.NODE_ENV === 'production',
-    cookieName: process.env.NODE_ENV === 'production'
-      ? '__Secure-authjs.session-token'
-      : 'authjs.session-token',
+    cookieName: '__Secure-authjs.session-token',
   });
 
   // Allow access to login page and API routes
