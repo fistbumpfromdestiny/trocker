@@ -54,35 +54,20 @@ function LoginForm() {
     setIsLoading(true);
 
     try {
-      console.log('[LOGIN] Attempting credentials login for:', email);
       const result = await signIn("credentials", {
         email,
         password,
         redirect: false,
       });
 
-      console.log('[LOGIN] Sign in result:', result);
-
       if (result?.error) {
-        console.error('[LOGIN] Sign in error:', result.error);
         setError("Invalid email or password");
       } else if (result?.ok) {
-        console.log('[LOGIN] Success! Redirecting to:', callbackUrl);
-
-        // Wait a bit for cookies to be set, then check session
-        await new Promise(resolve => setTimeout(resolve, 100));
-
-        const sessionCheck = await fetch('/api/auth/session');
-        const sessionData = await sessionCheck.json();
-        console.log('[LOGIN] Session after sign-in:', sessionData);
-
         window.location.href = callbackUrl;
       } else {
-        console.error('[LOGIN] Unexpected result:', result);
         setError("Login failed. Please try again.");
       }
     } catch (err) {
-      console.error('[LOGIN] Exception:', err);
       setError("An error occurred. Please try again.");
     } finally {
       setIsLoading(false);
@@ -93,13 +78,11 @@ function LoginForm() {
     setIsLoading(true);
     setError("");
     try {
-      const result = await signIn("google", {
+      await signIn("google", {
         callbackUrl,
         redirect: true,
       });
-      console.log('Google sign-in result:', result);
     } catch (err) {
-      console.error('Google sign-in error:', err);
       setError("Failed to sign in with Google: " + (err as Error).message);
       setIsLoading(false);
     }
