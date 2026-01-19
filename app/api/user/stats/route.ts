@@ -1,13 +1,17 @@
-import { NextResponse } from "next/server";
-import { auth } from "@/app/api/auth/[...nextauth]/route";
+import { NextRequest, NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
 import prisma from "@/lib/db";
 
 // GET - Get user statistics
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+      cookieName: '__Secure-authjs.session-token',
+    });
 
-    if (!session?.user) {
+    if (!token || !token.id) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -16,16 +20,16 @@ export async function GET() {
 
     // Get total location reports
     const totalReports = await prisma.locationReport.count({
-      where: { userId: session.user.id },
+      where: { userId: token.id },
     });
 
     const totalReportsV2 = await prisma.locationReportV2.count({
-      where: { userId: session.user.id },
+      where: { userId: token.id },
     });
 
     // Get recent reports
     const recentReports = await prisma.locationReportV2.findMany({
-      where: { userId: session.user.id },
+      where: { userId: token.id },
       include: {
         location: true,
         apartment: true,
@@ -38,7 +42,7 @@ export async function GET() {
     // Get most reported locations
     const locationCounts = await prisma.locationReportV2.groupBy({
       by: ["locationId"],
-      where: { userId: session.user.id },
+      where: { userId: token.id },
       _count: {
         locationId: true,
       },
@@ -67,14 +71,14 @@ export async function GET() {
     // Get total messages sent
     const totalMessages = await prisma.message.count({
       where: {
-        userId: session.user.id,
+        userId: token.id,
         deletedAt: null,
       },
     });
 
     // Get account info
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: token.id },
       include: {
         accounts: true,
       },
