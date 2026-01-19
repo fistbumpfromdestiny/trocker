@@ -54,19 +54,28 @@ function LoginForm() {
     setIsLoading(true);
 
     try {
+      console.log('[LOGIN] Attempting credentials login for:', email);
       const result = await signIn("credentials", {
         email,
         password,
         redirect: false,
       });
 
+      console.log('[LOGIN] Sign in result:', result);
+
       if (result?.error) {
+        console.error('[LOGIN] Sign in error:', result.error);
         setError("Invalid email or password");
-      } else {
+      } else if (result?.ok) {
+        console.log('[LOGIN] Success! Redirecting to:', callbackUrl);
         router.push(callbackUrl);
         router.refresh();
+      } else {
+        console.error('[LOGIN] Unexpected result:', result);
+        setError("Login failed. Please try again.");
       }
     } catch (err) {
+      console.error('[LOGIN] Exception:', err);
       setError("An error occurred. Please try again.");
     } finally {
       setIsLoading(false);
