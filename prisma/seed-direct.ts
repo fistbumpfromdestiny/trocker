@@ -21,6 +21,18 @@ async function main() {
     );
     console.log("Created cat: Rocky");
 
+    // Create Rockeye system user (for automated webhook messages)
+    // No passwordHash = cannot log in, only usable by code
+    await client.query(
+      `
+      INSERT INTO "User" (id, email, name, "passwordHash", role, "createdAt", "updatedAt")
+      VALUES ($1, $2, $3, NULL, $4, NOW(), NOW())
+      ON CONFLICT (id) DO NOTHING
+    `,
+      ["rockeye-system", "rockeye@system.local", "Rockeye 🤖", "USER"],
+    );
+    console.log("Created system user: Rockeye (cannot log in)");
+
     console.log("Seed completed successfully!");
   } catch (error) {
     console.error("Error during seed:", error);
