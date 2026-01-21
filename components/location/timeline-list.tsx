@@ -108,7 +108,7 @@ export function TimelineList({ catId }: TimelineListProps) {
     // LocationReportV2 structure: location + optional apartment
     if (report.location) {
       if (report.apartment) {
-        return `${report.location.name} (${report.apartment.name})`;
+        return `${report.location.name} - ${report.apartment.name}`;
       }
       return report.location.name;
     }
@@ -196,7 +196,7 @@ export function TimelineList({ catId }: TimelineListProps) {
                           {getLocationName(report)}
                         </h4>
                         <p className="text-xs text-terminal-green/70 font-mono">
-                          {format(new Date(report.entryTime), "MMM d, h:mm a")}
+                          {format(new Date(report.entryTime), "MMM d, HH:mm")}
                           {duration && ` • ${duration}`}
                         </p>
                       </div>
@@ -209,7 +209,7 @@ export function TimelineList({ catId }: TimelineListProps) {
 
                     {report.notes && (
                       <p className="text-sm text-terminal-yellow/80 italic mt-1 font-mono">
-                        `&quot;`{report.notes}`&quot;`
+                        {report.notes}
                       </p>
                     )}
 

@@ -79,7 +79,7 @@ export function CurrentLocationCard({ catId }: CurrentLocationCardProps) {
           Reported by {location.user.name || location.user.email}
         </p>
         {location.notes && (
-          <p className="text-sm text-muted-foreground mt-2 italic">"{location.notes}"</p>
+          <p className="text-sm text-muted-foreground mt-2 italic">{location.notes}</p>
         )}
       </div>
     </div>
