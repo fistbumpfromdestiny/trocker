@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { locationEvents } from "@/lib/location-events";
+import { messageEvents } from "@/lib/message-events";
 
 const ROCKEYE_USER_ID = "rockeye-system";
 
@@ -125,11 +126,37 @@ export async function handleArrival(payload: ArrivalWebhook) {
     ? `${report.location.name} - ${report.apartment.name}`
     : report.location.name;
 
-  await prisma.message.create({
+  const timeStr = entryTime.toLocaleTimeString("sv-SE", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  const message = await prisma.message.create({
     data: {
       userId: ROCKEYE_USER_ID,
-      content: `🚨 Rocky detected at ${locationName}! Spotted at ${entryTime.toLocaleTimeString()} 🐱`,
+      content: `🚨 Rocky detected at ${locationName}! Spotted at ${timeStr} 🐱`,
     },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+  });
+
+  // Emit event for real-time SSE broadcast
+  messageEvents.emit({
+    messageId: message.id,
+    content: message.content,
+    userId: message.userId,
+    userName: message.user.name,
+    userEmail: message.user.email,
+    createdAt: message.createdAt,
+    updatedAt: message.updatedAt,
+    deletedAt: null,
   });
 
   return report;
@@ -182,11 +209,32 @@ export async function handleDeparture(payload: DepartureWebhook) {
   }
 
   // Post departure message to chat
-  await prisma.message.create({
+  const departureMessage = await prisma.message.create({
     data: {
       userId: ROCKEYE_USER_ID,
       content: `👋 Rocky has departed! Visit lasted ${payload.duration_human} with ${payload.detection_count} detections.`,
     },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+  });
+
+  // Emit event for real-time SSE broadcast
+  messageEvents.emit({
+    messageId: departureMessage.id,
+    content: departureMessage.content,
+    userId: departureMessage.userId,
+    userName: departureMessage.user.name,
+    userEmail: departureMessage.user.email,
+    createdAt: departureMessage.createdAt,
+    updatedAt: departureMessage.updatedAt,
+    deletedAt: null,
   });
 
   return report;
