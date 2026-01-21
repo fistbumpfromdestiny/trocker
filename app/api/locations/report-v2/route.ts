@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { auth } from "@/app/api/auth/[...nextauth]/route";
 import { locationEvents } from "@/lib/location-events";
+import { notifications } from "@/lib/services/notification";
 
 export async function POST(request: NextRequest) {
   try {
@@ -58,6 +59,20 @@ export async function POST(request: NextRequest) {
       locationName: report.location.name,
       apartmentName: report.apartment?.name,
     });
+
+    // Send push notification to apartment owner if Rocky arrives at their apartment
+    if (
+      report.apartment?.userId &&
+      report.apartment.userId !== session.user.id
+    ) {
+      notifications
+        .rockyArrived(
+          report.apartment.userId,
+          report.location.name,
+          report.apartment.name
+        )
+        .catch((err) => console.error("Push notification failed:", err));
+    }
 
     return NextResponse.json(report);
   } catch (error) {

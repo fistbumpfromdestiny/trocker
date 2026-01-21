@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { User, Lock, BarChart3, MapPin, MessageSquare, Calendar } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { formatSwedishDate } from "@/lib/utils/date";
+import { NotificationPreferences } from "@/components/notifications/notification-preferences";
 
 interface UserStats {
   totalReports: number;
@@ -150,6 +151,9 @@ export default function SettingsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Notification Preferences */}
+      <NotificationPreferences />
 
       {/* Change Password - Only for non-OAuth users */}
       {!stats?.isOAuthUser && (

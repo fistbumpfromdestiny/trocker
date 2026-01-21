@@ -3,6 +3,7 @@ import { getToken } from "next-auth/jwt";
 import { prisma } from "@/lib/db";
 import { sendMessageSchema } from "@/lib/validations/message";
 import { messageEvents } from "@/lib/message-events";
+import { notifications } from "@/lib/services/notification";
 
 // GET - Fetch messages with pagination
 export async function GET(request: NextRequest) {
@@ -106,6 +107,14 @@ export async function POST(request: NextRequest) {
       replyToContent: message.replyToContent,
       replyToUserName: message.replyToUserName,
     });
+
+    // Send push notifications (non-blocking)
+    notifications
+      .newMessage(
+        { content: message.content, userName: message.user.name },
+        message.userId
+      )
+      .catch((err) => console.error("Push notification failed:", err));
 
     return NextResponse.json(message, { status: 201 });
   } catch (error: unknown) {

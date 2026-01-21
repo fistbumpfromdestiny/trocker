@@ -56,10 +56,12 @@
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",
     "vaul": "^1.1.2",
+    "web-push": "^3.6.7",
     "zod": "^4.3.5"
   },
   "devDependencies": {
     "@types/nodemailer": "^7.0.5",
+    "@types/web-push": "^3.6.4",
     "eslint": "^9.39.2",
     "eslint-config-next": "16.1.1",
     "tsx": "^4.21.0",

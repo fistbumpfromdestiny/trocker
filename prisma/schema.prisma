@@ -27,13 +27,15 @@ model User {
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 
-  apartments       Apartment[]
-  locationReports  LocationReport[]
-  locationReportsV2 LocationReportV2[]
-  messages         Message[]
-  messageRead      MessageRead?
-  accounts         Account[]   // OAuth accounts
-  sessions         Session[]
+  apartments             Apartment[]
+  locationReports        LocationReport[]
+  locationReportsV2      LocationReportV2[]
+  messages               Message[]
+  messageRead            MessageRead?
+  accounts               Account[]   // OAuth accounts
+  sessions               Session[]
+  pushSubscriptions      PushSubscription[]
+  notificationPreference NotificationPreference?
 
   @@index([email])
 }
@@ -279,6 +281,39 @@ model MessageRead {
   userId     String   @unique
   lastReadAt DateTime @default(now())
   updatedAt  DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Push notification subscriptions (one user can have multiple devices)
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// User notification preferences
+model NotificationPreference {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  enableMessages     Boolean  @default(true)
+  enableArrival      Boolean  @default(true)
+  enableDeparture    Boolean  @default(true)
+  enableAllLocations Boolean  @default(false)
+  quietHoursEnabled  Boolean  @default(false)
+  quietHoursStart    String?  @default("22:00")
+  quietHoursEnd      String?  @default("07:00")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
