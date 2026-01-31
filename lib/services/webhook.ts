@@ -129,6 +129,7 @@ export async function handleArrival(payload: ArrivalWebhook) {
   const timeStr = entryTime.toLocaleTimeString("sv-SE", {
     hour: "2-digit",
     minute: "2-digit",
+    hour12: false,
   });
 
   const message = await prisma.message.create({
