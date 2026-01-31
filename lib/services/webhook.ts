@@ -69,19 +69,19 @@ export async function handleArrival(payload: ArrivalWebhook) {
   });
 
   if (!castleLocation) {
-    throw new Error('The Castle location not found');
+    throw new Error("The Castle location not found");
   }
 
   // Get The Balcony apartment
   const balconyApartment = await prisma.apartment.findFirst({
     where: {
       locationId: castleLocation.id,
-      name: "The Balcony"
+      name: "The Balcony",
     },
   });
 
   if (!balconyApartment) {
-    throw new Error('The Balcony apartment not found');
+    throw new Error("The Balcony apartment not found");
   }
 
   // Set exit time for any current location
@@ -213,7 +213,7 @@ export async function handleDeparture(payload: DepartureWebhook) {
   const departureMessage = await prisma.message.create({
     data: {
       userId: ROCKEYE_USER_ID,
-      content: `👋 Rocky has departed! Visit lasted ${payload.duration_human} with ${payload.detection_count} detections.`,
+      content: `👋 Rocky has left the balcony!`,
     },
     include: {
       user: {
