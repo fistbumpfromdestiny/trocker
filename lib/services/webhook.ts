@@ -209,34 +209,5 @@ export async function handleDeparture(payload: DepartureWebhook) {
     });
   }
 
-  // Post departure message to chat
-  const departureMessage = await prisma.message.create({
-    data: {
-      userId: ROCKEYE_USER_ID,
-      content: `👋 Rocky has left the balcony!`,
-    },
-    include: {
-      user: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-        },
-      },
-    },
-  });
-
-  // Emit event for real-time SSE broadcast
-  messageEvents.emit({
-    messageId: departureMessage.id,
-    content: departureMessage.content,
-    userId: departureMessage.userId,
-    userName: departureMessage.user.name,
-    userEmail: departureMessage.user.email,
-    createdAt: departureMessage.createdAt,
-    updatedAt: departureMessage.updatedAt,
-    deletedAt: null,
-  });
-
   return report;
 }
