@@ -47,7 +47,6 @@ export function TimelineList({ catId }: TimelineListProps) {
         if (res.ok) {
           const data = await res.json();
           setTimeline(data);
-          setHasMore(data.length > displayCount);
         }
       } catch (error) {
         console.error("Failed to fetch timeline:", error);
@@ -83,7 +82,7 @@ export function TimelineList({ catId }: TimelineListProps) {
     return () => {
       eventSource.close();
     };
-  }, [catId, displayCount]);
+  }, [catId]);
 
   const handleLoadMore = () => {
     setDisplayCount((prev) => prev + 5);
