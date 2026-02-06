@@ -18,14 +18,25 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { subscription, userAgent } = subscribeSchema.parse(body);
 
-    // Upsert subscription (update if endpoint exists, create if not)
+    // Check if endpoint is already registered to a different user
+    const existingSubscription = await prisma.pushSubscription.findUnique({
+      where: { endpoint: subscription.endpoint },
+    });
+
+    if (existingSubscription && existingSubscription.userId !== String(token.id)) {
+      // Delete the old subscription - the new user is now using this device
+      await prisma.pushSubscription.delete({
+        where: { endpoint: subscription.endpoint },
+      });
+    }
+
+    // Upsert subscription for current user
     const pushSubscription = await prisma.pushSubscription.upsert({
       where: { endpoint: subscription.endpoint },
       update: {
         p256dh: subscription.keys.p256dh,
         auth: subscription.keys.auth,
         userAgent,
-        userId: String(token.id),
       },
       create: {
         userId: String(token.id),
