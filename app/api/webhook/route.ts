@@ -60,10 +60,7 @@ export async function POST(request: NextRequest) {
       stack: error instanceof Error ? error.stack : undefined
     });
     return NextResponse.json(
-      {
-        error: "Internal server error",
-        details: errorMessage,
-      },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
