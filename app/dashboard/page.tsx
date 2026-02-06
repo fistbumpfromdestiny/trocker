@@ -56,7 +56,7 @@ export default function DashboardPage() {
         }
       } catch (error) {
         setTerminalText("Unable to determine Rocky's current location...");
-        console.log(error);
+        console.error("Failed to fetch location:", error);
       }
     };
 
