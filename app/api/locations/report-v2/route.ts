@@ -20,6 +20,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate apartment ownership if apartmentId is provided
+    if (apartmentId) {
+      const apartment = await prisma.apartment.findUnique({
+        where: { id: apartmentId },
+      });
+
+      if (!apartment) {
+        return NextResponse.json(
+          { error: "Apartment not found" },
+          { status: 404 }
+        );
+      }
+
+      if (apartment.userId && apartment.userId !== session.user.id) {
+        return NextResponse.json(
+          { error: "You can only report Rocky at your own apartment" },
+          { status: 403 }
+        );
+      }
+    }
+
     // Set exit time for previous location
     await prisma.locationReportV2.updateMany({
       where: {
