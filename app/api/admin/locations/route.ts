@@ -1,6 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { auth } from "@/app/api/auth/[...nextauth]/route";
+
+const createLocationSchema = z.object({
+  externalId: z.string().min(1),
+  name: z.string().min(1),
+  description: z.string().nullable().optional(),
+  type: z.enum(["APARTMENT", "OUTDOOR", "BUILDING_COMMON"]),
+  gridTop: z.string(),
+  gridLeft: z.string(),
+  gridWidth: z.string(),
+  gridHeight: z.string(),
+  displayOrder: z.number().int().optional(),
+});
 
 // GET all locations (admin only)
 export async function GET(request: NextRequest) {
@@ -46,27 +59,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const data = await request.json();
-    const { externalId, name, description, type, gridTop, gridLeft, gridWidth, gridHeight, displayOrder } = data;
+    const body = await request.json();
+    const parseResult = createLocationSchema.safeParse(body);
 
-    if (!externalId || !name || !type || !gridTop || !gridLeft || !gridWidth || !gridHeight) {
+    if (!parseResult.success) {
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { error: "Invalid input", details: parseResult.error.flatten() },
         { status: 400 }
       );
     }
 
+    const data = parseResult.data;
+
     const location = await prisma.location.create({
       data: {
-        externalId,
-        name,
-        description: description || null,
-        type,
-        gridTop,
-        gridLeft,
-        gridWidth,
-        gridHeight,
-        displayOrder: displayOrder || 0,
+        externalId: data.externalId,
+        name: data.name,
+        description: data.description || null,
+        type: data.type,
+        gridTop: data.gridTop,
+        gridLeft: data.gridLeft,
+        gridWidth: data.gridWidth,
+        gridHeight: data.gridHeight,
+        displayOrder: data.displayOrder || 0,
         isActive: true,
       },
     });
