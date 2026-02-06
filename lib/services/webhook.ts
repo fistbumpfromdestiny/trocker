@@ -174,7 +174,6 @@ export async function handleArrival(payload: ArrivalWebhook) {
  */
 export async function handleDeparture(payload: DepartureWebhook) {
   const exitTime = new Date(payload.departure_time);
-  const entryTime = new Date(payload.arrival_time);
 
   // Get Rocky's cat ID
   const rocky = await prisma.cat.findFirst({
@@ -185,34 +184,30 @@ export async function handleDeparture(payload: DepartureWebhook) {
     throw new Error("Rocky not found in database");
   }
 
-  // Find the most recent location report matching this visit
-  // We look for reports around the entry time
+  // Find the location report matching this visit by visit_id in notes
   const report = await prisma.locationReportV2.findFirst({
     where: {
       catId: rocky.id,
-      entryTime: {
-        gte: new Date(entryTime.getTime() - 5000), // 5 second tolerance
-        lte: new Date(entryTime.getTime() + 5000),
+      notes: {
+        contains: `visit ${payload.visit_id}`,
       },
       exitTime: null,
     },
-    orderBy: {
-      entryTime: "desc",
-    },
   });
 
-  if (report) {
-    // Update exit time for this report
-    await prisma.locationReportV2.update({
-      where: { id: report.id },
-      data: {
-        exitTime,
-        notes: report.notes
-          ? `${report.notes} | Duration: ${payload.duration_human}, Detections: ${payload.detection_count}`
-          : `Duration: ${payload.duration_human}, Detections: ${payload.detection_count}`,
-      },
-    });
+  if (!report) {
+    console.warn(`No matching arrival found for departure visit_id: ${payload.visit_id}`);
+    return null;
   }
+
+  // Update exit time for this report
+  await prisma.locationReportV2.update({
+    where: { id: report.id },
+    data: {
+      exitTime,
+      notes: `${report.notes} | Duration: ${payload.duration_human}, Detections: ${payload.detection_count}`,
+    },
+  });
 
   return report;
 }
