@@ -147,9 +147,7 @@ export function TimelineList({ catId }: TimelineListProps) {
         <div className="flex items-center gap-2">
           <span className="text-terminal-cyan text-lg">▶</span>
           <span className="text-foreground font-semibold">
-            {isExpanded
-              ? "Hide Timeline"
-              : `Show Timeline (${timeline.length} sightings)`}
+            {isExpanded ? "Hide Timeline" : "Show Timeline"}
           </span>
         </div>
         {isExpanded ? (
@@ -203,7 +201,7 @@ export function TimelineList({ catId }: TimelineListProps) {
 
                     {report.notes && (
                       <p className="text-sm text-terminal-yellow/80 italic mt-1 font-mono">
-                        {report.notes}
+                        {report.notes.replace(/\s*\(visit [^)]+\)/g, "")}
                       </p>
                     )}
 
