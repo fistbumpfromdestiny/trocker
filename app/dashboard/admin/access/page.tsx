@@ -169,7 +169,7 @@ export default function AdminAccessPage() {
             Send Email Invitation
           </CardTitle>
           <CardDescription>
-            Invite a user by email. They'll be able to sign in with Google once they receive the invite.
+            Invite a user by email. They&apos;ll be able to sign in with Google once they receive the invite.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -281,7 +281,7 @@ export default function AdminAccessPage() {
             Active Invites ({activeInvites.length})
           </CardTitle>
           <CardDescription>
-            Email invitations that haven't been used yet
+            Email invitations that haven&apos;t been used yet
           </CardDescription>
         </CardHeader>
         <CardContent>

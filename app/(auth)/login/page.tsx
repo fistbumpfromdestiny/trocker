@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,7 +16,6 @@ import {
 import { Separator } from "@/components/ui/separator";
 
 function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
   const authError = searchParams.get("error");
@@ -67,7 +66,7 @@ function LoginForm() {
       } else {
         setError("Login failed. Please try again.");
       }
-    } catch (err) {
+    } catch {
       setError("An error occurred. Please try again.");
     } finally {
       setIsLoading(false);
@@ -96,7 +95,7 @@ function LoginForm() {
             Trocker
           </CardTitle>
           <CardDescription className="text-base">
-            Track Rocky's adventures
+            Track Rocky&apos;s adventures
           </CardDescription>
         </CardHeader>
         <CardContent>
