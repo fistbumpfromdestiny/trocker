@@ -66,7 +66,7 @@ export function CurrentLocationCard({ catId }: CurrentLocationCardProps) {
     return (
       <div className="text-center p-6 text-muted-foreground">
         <MapPin className="h-12 w-12 mx-auto mb-2 opacity-50" />
-        <p>Rocky hasn't been spotted yet</p>
+        <p>Rocky hasn&apos;t been spotted yet</p>
       </div>
     );
   }

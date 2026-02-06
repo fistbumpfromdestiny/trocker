@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Check, X, Mail, UserPlus, Clock, Ban } from "lucide-react";
@@ -85,7 +84,7 @@ export default function AdminAccessPage() {
         const error = await res.json();
         toast.error(error.error || "Failed to send invite");
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to send invite");
     } finally {
       setLoading(false);
@@ -107,7 +106,7 @@ export default function AdminAccessPage() {
         const error = await res.json();
         toast.error(error.error || "Failed to approve user");
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to approve user");
     }
   };
@@ -127,7 +126,7 @@ export default function AdminAccessPage() {
         const error = await res.json();
         toast.error(error.error || "Failed to reject user");
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to reject user");
     }
   };
@@ -144,7 +143,7 @@ export default function AdminAccessPage() {
       } else {
         toast.error("Failed to revoke invite");
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to revoke invite");
     }
   };

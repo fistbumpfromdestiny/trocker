@@ -54,7 +54,7 @@ export const authConfig = {
     })
   ],
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account }) {
       // Allow credentials login (existing users with passwords)
       if (account?.provider === "credentials") {
         return true;

@@ -41,7 +41,7 @@ export function LocationReportForm({ catId }: LocationReportFormProps) {
   const [outdoorLocations, setOutdoorLocations] = useState<OutdoorLocation[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { register, handleSubmit, setValue, watch } = useForm<ReportFormData>({
+  const { register, handleSubmit, setValue } = useForm<ReportFormData>({
     resolver: zodResolver(reportSchema),
     defaultValues: {
       locationType: "OUTDOOR",
@@ -82,7 +82,7 @@ export function LocationReportForm({ catId }: LocationReportFormProps) {
         const error = await res.json();
         toast.error(error.error || "Failed to report location");
       }
-    } catch (error) {
+    } catch {
       toast.error("An error occurred");
     } finally {
       setIsSubmitting(false);

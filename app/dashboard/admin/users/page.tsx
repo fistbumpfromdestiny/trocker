@@ -51,7 +51,7 @@ export default function AdminUsersPage() {
       } else {
         toast.error("Failed to fetch users");
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to fetch users");
     } finally {
       setLoading(false);
@@ -99,7 +99,7 @@ export default function AdminUsersPage() {
       } else {
         toast.error("Failed to update user");
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to update user");
     }
   };
@@ -119,7 +119,7 @@ export default function AdminUsersPage() {
         const data = await res.json();
         toast.error(data.error || "Failed to delete user");
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete user");
     }
   };
@@ -146,7 +146,7 @@ export default function AdminUsersPage() {
         const data = await res.json();
         toast.error(data.error || "Failed to create user");
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to create user");
     }
   };

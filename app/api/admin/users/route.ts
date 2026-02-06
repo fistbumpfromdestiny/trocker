@@ -4,7 +4,7 @@ import { auth } from "@/app/api/auth/[...nextauth]/route";
 import bcrypt from "bcryptjs";
 
 // GET all users (admin only)
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await auth();
     if (!session || !session.user || session.user.role !== "ADMIN") {

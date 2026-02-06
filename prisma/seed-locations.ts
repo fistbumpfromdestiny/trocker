@@ -380,15 +380,6 @@ const locations = [
   },
 ];
 
-const castleApartments = [
-  {
-    name: "Carlefred",
-    description: "The grand throne room on the sixth floor",
-    order: 1,
-  },
-  { name: "Eriksson Larsson", description: "The spare people", order: 2 },
-];
-
 async function main() {
   console.log("Seeding locations...");
 

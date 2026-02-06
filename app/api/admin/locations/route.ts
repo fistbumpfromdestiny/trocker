@@ -16,7 +16,7 @@ const createLocationSchema = z.object({
 });
 
 // GET all locations (admin only)
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await auth();
     if (!session || !session.user || session.user.role !== "ADMIN") {

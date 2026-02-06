@@ -14,9 +14,15 @@ import { formatDistanceToNow } from "date-fns";
 import { formatSwedishDate } from "@/lib/utils/date";
 import { NotificationPreferences } from "@/components/notifications/notification-preferences";
 
+interface RecentReport {
+  id: string;
+  entryTime: string;
+  locationName: string;
+}
+
 interface UserStats {
   totalReports: number;
-  recentReports: any[];
+  recentReports: RecentReport[];
   topLocations: { location: string; count: number }[];
   totalMessages: number;
   isOAuthUser: boolean;
@@ -88,7 +94,7 @@ export default function SettingsPage() {
         const error = await res.json();
         toast.error(error.error || "Failed to change password");
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to change password");
     } finally {
       setChangingPassword(false);

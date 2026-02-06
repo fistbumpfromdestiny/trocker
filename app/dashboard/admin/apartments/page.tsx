@@ -65,7 +65,7 @@ export default function AdminApartmentsPage() {
       } else {
         toast.error("Failed to fetch apartments");
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to fetch apartments");
     } finally {
       setLoading(false);
@@ -129,7 +129,7 @@ export default function AdminApartmentsPage() {
       } else {
         toast.error("Failed to update apartment");
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to update apartment");
     }
   };
@@ -148,7 +148,7 @@ export default function AdminApartmentsPage() {
       } else {
         toast.error("Failed to delete apartment");
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete apartment");
     }
   };
@@ -179,7 +179,7 @@ export default function AdminApartmentsPage() {
         const data = await res.json();
         toast.error(data.error || "Failed to create apartment");
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to create apartment");
     }
   };

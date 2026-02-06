@@ -271,7 +271,7 @@ export function InteractiveMap({ catId }: { catId: string }) {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <span className="text-terminal-cyan">★</span>
-              Report Prince Rocky's Location
+              Report Prince Rocky&apos;s Location
             </DialogTitle>
             <DialogDescription>
               {selectedLocation && selectedLocation.apartments.length > 0

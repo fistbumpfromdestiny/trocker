@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,14 +12,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu, Home, Building2, MapPin, Settings, LogOut, Users, UserCheck } from "lucide-react";
+import { Menu, Home, MapPin, Settings, LogOut, Users, UserCheck } from "lucide-react";
 
 interface MobileNavProps {
   isAdmin?: boolean;
 }
 
 export function MobileNav({ isAdmin }: MobileNavProps) {
-  const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
   const navItems = [

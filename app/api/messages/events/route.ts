@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
       const keepaliveInterval = setInterval(() => {
         try {
           controller.enqueue(encoder.encode(": keepalive\n\n"));
-        } catch (error) {
+        } catch {
           clearInterval(keepaliveInterval);
         }
       }, 30000);

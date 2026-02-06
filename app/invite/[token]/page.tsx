@@ -35,7 +35,24 @@ export default function InvitePage() {
   const [hasGoogleOAuth, setHasGoogleOAuth] = useState(false);
 
   useEffect(() => {
-    fetchInviteData();
+    const loadData = async () => {
+      try {
+        const res = await fetch(`/api/invites/verify/${token}`);
+        const data = await res.json();
+
+        if (res.ok) {
+          setInviteData(data);
+        } else {
+          setInviteData({ email: "", valid: false, expired: false, used: false, error: data.error });
+        }
+      } catch {
+        setInviteData({ email: "", valid: false, expired: false, used: false, error: "Failed to verify invite" });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
     checkGoogleOAuth();
   }, [token]);
 
@@ -46,23 +63,6 @@ export default function InvitePage() {
       setHasGoogleOAuth(providers.google !== undefined);
     } catch (error) {
       console.error("Failed to check OAuth providers:", error);
-    }
-  };
-
-  const fetchInviteData = async () => {
-    try {
-      const res = await fetch(`/api/invites/verify/${token}`);
-      const data = await res.json();
-
-      if (res.ok) {
-        setInviteData(data);
-      } else {
-        setInviteData({ email: "", valid: false, expired: false, used: false, error: data.error });
-      }
-    } catch (error) {
-      setInviteData({ email: "", valid: false, expired: false, used: false, error: "Failed to verify invite" });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -108,7 +108,7 @@ export default function InvitePage() {
         toast.error(error.error || "Failed to create account");
         setSubmitting(false);
       }
-    } catch (error) {
+    } catch {
       toast.error("An error occurred");
       setSubmitting(false);
     }
@@ -165,7 +165,7 @@ export default function InvitePage() {
             <CardTitle>Create Your Account</CardTitle>
           </div>
           <CardDescription>
-            You've been invited to join Trocker as <strong>{inviteData.email}</strong>
+            You&apos;ve been invited to join Trocker as <strong>{inviteData.email}</strong>
             {hasGoogleOAuth && (
               <span className="block mt-2 text-xs text-muted-foreground">
                 Note: Your Google account must use the email address above

@@ -72,7 +72,7 @@ export default function AdminLocationsPage() {
       } else {
         toast.error("Failed to fetch locations");
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to fetch locations");
     } finally {
       setLoading(false);
@@ -126,7 +126,7 @@ export default function AdminLocationsPage() {
       } else {
         toast.error("Failed to update location");
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to update location");
     }
   };
@@ -145,7 +145,7 @@ export default function AdminLocationsPage() {
       } else {
         toast.error("Failed to delete location");
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete location");
     }
   };
@@ -177,7 +177,7 @@ export default function AdminLocationsPage() {
       } else {
         toast.error("Failed to add apartment");
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to add apartment");
     }
   };
@@ -196,7 +196,7 @@ export default function AdminLocationsPage() {
       } else {
         toast.error("Failed to delete apartment");
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete apartment");
     }
   };
@@ -225,7 +225,7 @@ export default function AdminLocationsPage() {
       } else {
         toast.error("Failed to update apartment");
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to update apartment");
     }
   };
@@ -259,7 +259,7 @@ export default function AdminLocationsPage() {
         const data = await res.json();
         toast.error(data.error || "Failed to attach apartment");
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to attach apartment");
     }
   };

@@ -48,6 +48,6 @@ self.addEventListener("notificationclick", function (event) {
 });
 
 // Handle notification close (for analytics if needed)
-self.addEventListener("notificationclose", function (event) {
+self.addEventListener("notificationclose", function () {
   // Could track dismissals here
 });
