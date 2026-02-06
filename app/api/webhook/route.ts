@@ -1,10 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import {
   validateWebhookSecret,
   handleArrival,
   handleDeparture,
-  type WebhookPayload,
 } from "@/lib/services/webhook";
+
+const arrivalSchema = z.object({
+  event: z.literal("rocky_arrived"),
+  visit_id: z.string().min(1),
+  timestamp: z.string().datetime(),
+  snapshot_base64: z.string().optional(),
+});
+
+const departureSchema = z.object({
+  event: z.literal("rocky_departed"),
+  visit_id: z.string().min(1),
+  arrival_time: z.string().datetime(),
+  departure_time: z.string().datetime(),
+  duration_seconds: z.number().int().nonnegative(),
+  duration_human: z.string(),
+  detection_count: z.number().int().nonnegative(),
+  snapshot_base64: z.string().optional(),
+});
+
+const webhookPayloadSchema = z.discriminatedUnion("event", [
+  arrivalSchema,
+  departureSchema,
+]);
 
 function logWebhook(level: "info" | "warn" | "error", message: string, data?: object) {
   const timestamp = new Date().toISOString();
@@ -24,34 +47,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Parse webhook payload
-    const payload: WebhookPayload = await request.json();
+    // Parse and validate webhook payload
+    const body = await request.json();
+    const parseResult = webhookPayloadSchema.safeParse(body);
+
+    if (!parseResult.success) {
+      logWebhook("warn", "Invalid webhook payload", { errors: parseResult.error.flatten() });
+      return NextResponse.json(
+        { error: "Invalid webhook payload" },
+        { status: 400 }
+      );
+    }
+
+    const payload = parseResult.data;
     logWebhook("info", `Received ${payload.event}`, { visit_id: payload.visit_id });
 
     // Route to appropriate handler based on event type
-    switch (payload.event) {
-      case "rocky_arrived":
-        await handleArrival(payload);
-        logWebhook("info", `Successfully processed ${payload.event}`, { visit_id: payload.visit_id });
-        return NextResponse.json({
-          success: true,
-          message: "Arrival event processed",
-        });
-
-      case "rocky_departed":
-        await handleDeparture(payload);
-        logWebhook("info", `Successfully processed ${payload.event}`, { visit_id: payload.visit_id });
-        return NextResponse.json({
-          success: true,
-          message: "Departure event processed",
-        });
-
-      default:
-        logWebhook("warn", `Unknown event type: ${(payload as any).event}`, { payload });
-        return NextResponse.json(
-          { error: `Unknown event type: ${(payload as any).event}` },
-          { status: 400 }
-        );
+    if (payload.event === "rocky_arrived") {
+      await handleArrival(payload);
+      logWebhook("info", `Successfully processed ${payload.event}`, { visit_id: payload.visit_id });
+      return NextResponse.json({
+        success: true,
+        message: "Arrival event processed",
+      });
+    } else {
+      await handleDeparture(payload);
+      logWebhook("info", `Successfully processed ${payload.event}`, { visit_id: payload.visit_id });
+      return NextResponse.json({
+        success: true,
+        message: "Departure event processed",
+      });
     }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
