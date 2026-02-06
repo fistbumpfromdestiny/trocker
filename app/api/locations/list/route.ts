@@ -1,8 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
 import { prisma } from "@/lib/db";
 
 export async function GET(request: NextRequest) {
   try {
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+      cookieName: "__Secure-authjs.session-token",
+    });
+
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const locations = await prisma.location.findMany({
       where: {
         isActive: true,
