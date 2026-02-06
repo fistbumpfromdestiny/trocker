@@ -24,17 +24,6 @@ export async function reportLocation(params: ReportLocationParams) {
     notes,
   } = params;
 
-  // Validate ownership for apartment reports
-  if (locationType === LocationType.APARTMENT && apartmentId) {
-    const apartment = await prisma.apartment.findUnique({
-      where: { id: apartmentId },
-    });
-
-    if (!apartment || apartment.userId !== userId) {
-      throw new Error('Unauthorized: You can only report Rocky at your own apartment');
-    }
-  }
-
   // Get the current/most recent location (one without exit time)
   const currentLocation = await prisma.locationReport.findFirst({
     where: {
