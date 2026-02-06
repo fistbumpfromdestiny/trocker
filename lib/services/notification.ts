@@ -21,6 +21,19 @@ export interface NotificationPayload {
   actions?: Array<{ action: string; title: string }>;
 }
 
+// Parse time string "HH:MM" to minutes since midnight, returns null if invalid
+function parseTimeToMinutes(timeStr: string): number | null {
+  const match = timeStr.match(/^(\d{1,2}):(\d{2})$/);
+  if (!match) return null;
+
+  const hours = parseInt(match[1], 10);
+  const minutes = parseInt(match[2], 10);
+
+  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
+
+  return hours * 60 + minutes;
+}
+
 // Check if user is in quiet hours
 function isInQuietHours(preferences: {
   quietHoursEnabled: boolean;
@@ -30,16 +43,14 @@ function isInQuietHours(preferences: {
   if (!preferences.quietHoursEnabled) return false;
   if (!preferences.quietHoursStart || !preferences.quietHoursEnd) return false;
 
+  const startTime = parseTimeToMinutes(preferences.quietHoursStart);
+  const endTime = parseTimeToMinutes(preferences.quietHoursEnd);
+
+  // If parsing fails, don't enforce quiet hours
+  if (startTime === null || endTime === null) return false;
+
   const now = new Date();
   const currentTime = now.getHours() * 60 + now.getMinutes();
-
-  const [startHour, startMin] = preferences.quietHoursStart
-    .split(":")
-    .map(Number);
-  const [endHour, endMin] = preferences.quietHoursEnd.split(":").map(Number);
-
-  const startTime = startHour * 60 + startMin;
-  const endTime = endHour * 60 + endMin;
 
   // Handle overnight quiet hours (e.g., 22:00 to 07:00)
   if (startTime > endTime) {
