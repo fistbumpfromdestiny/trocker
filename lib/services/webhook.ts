@@ -68,6 +68,23 @@ export async function handleArrival(payload: ArrivalWebhook) {
     throw new Error("Rocky not found in database");
   }
 
+  // Check if Rocky is currently in the Eriksson Larsson apartment
+  // If so, ignore this camera detection (it's a mirror reflection in the balcony door)
+  const currentLocation = await prisma.locationReportV2.findFirst({
+    where: {
+      catId: rocky.id,
+      exitTime: null,
+    },
+    include: {
+      apartment: true,
+    },
+  });
+
+  if (currentLocation?.apartment?.name === "Eriksson Larsson") {
+    console.log("Ignoring camera detection - Rocky is in Eriksson Larsson (mirror reflection)");
+    return null;
+  }
+
   // Get The Castle location
   const castleLocation = await prisma.location.findFirst({
     where: { externalId: "building-10" }, // The Castle
