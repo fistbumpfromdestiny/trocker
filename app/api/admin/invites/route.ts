@@ -19,6 +19,16 @@ export async function GET() {
 
     const invites = await prisma.userInvite.findMany({
       orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        email: true,
+        status: true,
+        expiresAt: true,
+        createdAt: true,
+        createdBy: true,
+        usedAt: true,
+        // Explicitly exclude token
+      },
     });
 
     return NextResponse.json(invites);
@@ -93,7 +103,13 @@ export async function POST(req: NextRequest) {
       // The invite is still created and can be resent
     }
 
-    return NextResponse.json(invite);
+    return NextResponse.json({
+      id: invite.id,
+      email: invite.email,
+      status: invite.status,
+      expiresAt: invite.expiresAt,
+      createdAt: invite.createdAt,
+    });
   } catch (error) {
     console.error("Error creating invite:", error);
     return NextResponse.json(
