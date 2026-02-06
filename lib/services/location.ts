@@ -117,10 +117,17 @@ export async function getLocationTimeline(catId: string, limit: number = 50) {
           email: true,
         },
       },
-      location: true,
+      location: {
+        select: {
+          id: true,
+          name: true,
+          type: true,
+        },
+      },
       apartment: {
-        include: {
-          user: true,
+        select: {
+          id: true,
+          name: true,
         },
       },
     },

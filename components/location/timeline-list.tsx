@@ -23,11 +23,6 @@ interface TimelineReport {
   apartment: {
     id: string;
     name: string;
-    user: {
-      id: string;
-      name: string | null;
-      email: string;
-    };
   } | null;
   user: {
     id: string;
