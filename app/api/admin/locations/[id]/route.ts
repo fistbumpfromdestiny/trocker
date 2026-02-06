@@ -1,6 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { auth } from "@/app/api/auth/[...nextauth]/route";
+
+const updateLocationSchema = z.object({
+  name: z.string().min(1).optional(),
+  description: z.string().nullable().optional(),
+  gridTop: z.string().optional(),
+  gridLeft: z.string().optional(),
+  gridWidth: z.string().optional(),
+  gridHeight: z.string().optional(),
+  isActive: z.boolean().optional(),
+  displayOrder: z.number().int().optional(),
+});
 
 // GET single location
 export async function GET(
@@ -59,14 +71,19 @@ export async function PUT(
     }
 
     const { id } = await params;
-    const data = await request.json();
+    const body = await request.json();
+
+    const parseResult = updateLocationSchema.safeParse(body);
+    if (!parseResult.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parseResult.error.flatten() },
+        { status: 400 }
+      );
+    }
 
     const location = await prisma.location.update({
       where: { id },
-      data: {
-        ...data,
-        updatedAt: new Date(),
-      },
+      data: parseResult.data,
     });
 
     return NextResponse.json(location);
