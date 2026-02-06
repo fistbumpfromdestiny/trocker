@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/db";
 import { locationEvents } from "@/lib/location-events";
 import { messageEvents } from "@/lib/message-events";
@@ -44,7 +45,11 @@ export function validateWebhookSecret(authHeader: string | null): boolean {
     ? authHeader.slice(7)
     : authHeader;
 
-  return token === expectedSecret;
+  // Use timing-safe comparison to prevent timing attacks
+  if (token.length !== expectedSecret.length) {
+    return false;
+  }
+  return timingSafeEqual(Buffer.from(token), Buffer.from(expectedSecret));
 }
 
 /**
