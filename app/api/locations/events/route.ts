@@ -1,9 +1,20 @@
 import { NextRequest } from "next/server";
+import { getToken } from "next-auth/jwt";
 import { locationEvents } from "@/lib/location-events";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
+  const token = await getToken({
+    req: request,
+    secret: process.env.NEXTAUTH_SECRET,
+    cookieName: "__Secure-authjs.session-token",
+  });
+
+  if (!token) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+
   const { searchParams } = new URL(request.url);
   const catId = searchParams.get("catId") || "rocky";
 
