@@ -262,28 +262,6 @@ export function InteractiveMap({ catId }: { catId: string }) {
         </div>
       </div>
 
-      {/* Map legend */}
-      {/* <div className="p-3 bg-muted/30 border-t border-border"> */}
-      {/*   <div className="flex items-center justify-between gap-4 text-xs pixel-font"> */}
-      {/*     <div className="flex items-center gap-2"> */}
-      {/*       <span className="text-terminal-cyan">◆</span> */}
-      {/*       <span className="text-muted-foreground"> */}
-      {/*         Click grid to report location */}
-      {/*       </span> */}
-      {/*     </div> */}
-      {/*     <div className="flex items-center gap-3"> */}
-      {/*       <div className="flex items-center gap-1"> */}
-      {/*         <Image src="/rocky-motion.png" alt="" width={16} height={16} /> */}
-      {/*         <span className="text-muted-foreground">Outdoor</span> */}
-      {/*       </div> */}
-      {/*       <div className="flex items-center gap-1"> */}
-      {/*         <Image src="/rocky-resting.png" alt="" width={16} height={16} /> */}
-      {/*         <span className="text-muted-foreground">Indoor</span> */}
-      {/*       </div> */}
-      {/*     </div> */}
-      {/*   </div> */}
-      {/* </div> */}
-
       {/* Confirmation Dialog */}
       <Dialog
         open={selectedLocation !== null}
