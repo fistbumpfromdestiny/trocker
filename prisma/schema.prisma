@@ -189,6 +189,7 @@ model LocationReport {
   outdoorLocation OutdoorLocation? @relation(fields: [outdoorLocationId], references: [id], onDelete: Cascade)
 
   @@index([catId, entryTime])
+  @@index([catId, exitTime])
   @@index([userId])
   @@index([apartmentId])
   @@index([outdoorLocationId])
@@ -251,6 +252,7 @@ model LocationReportV2 {
   apartment Apartment? @relation(fields: [apartmentId], references: [id], onDelete: SetNull)
 
   @@index([catId, entryTime])
+  @@index([catId, exitTime])
   @@index([userId])
   @@index([locationId])
   @@index([apartmentId])
@@ -273,6 +275,7 @@ model Message {
 
   @@index([createdAt])
   @@index([deletedAt])
+  @@index([deletedAt, createdAt])
   @@index([replyToId])
 }
 
