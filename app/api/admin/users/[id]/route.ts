@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { auth } from "@/app/api/auth/[...nextauth]/route";
 import bcrypt from "bcryptjs";
 import { Role } from "@prisma/client";
+
+const updateUserSchema = z.object({
+  email: z.string().email(),
+  name: z.string().nullable().optional(),
+  role: z.enum(["ADMIN", "USER"]),
+  password: z.string().min(12).optional().or(z.literal("")),
+});
 
 // GET single user
 export async function GET(
@@ -55,8 +63,17 @@ export async function PUT(
     }
 
     const { id } = await params;
-    const data = await request.json();
-    const { email, name, role, password } = data;
+    const body = await request.json();
+    const parseResult = updateUserSchema.safeParse(body);
+
+    if (!parseResult.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parseResult.error.flatten() },
+        { status: 400 }
+      );
+    }
+
+    const { email, name, role, password } = parseResult.data;
 
     // Prepare update data
     const updateData: {
