@@ -32,10 +32,15 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    const locationName = currentLocation.apartment
+      ? `${currentLocation.location.name} - ${currentLocation.apartment.name}`
+      : currentLocation.location.name;
+
     return NextResponse.json({
       locationId: currentLocation.locationId,
       apartmentId: currentLocation.apartmentId,
       locationType: currentLocation.location.type,
+      locationName,
       exitTime: currentLocation.exitTime,
       entryTime: currentLocation.entryTime,
     });

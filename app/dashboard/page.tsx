@@ -47,7 +47,7 @@ export default function DashboardPage() {
           const data = await res.json();
           // Check if there's a current location (no exitTime)
           if (data.locationId && data.exitTime === null) {
-            setTerminalText("Rocky's last location determined...");
+            setTerminalText(`Rocky located at ${data.locationName}`);
           } else {
             setTerminalText("Unable to determine Rocky's current location...");
           }
@@ -71,7 +71,10 @@ export default function DashboardPage() {
 
         if (data.type === "location-update") {
           // Update terminal text when location changes
-          setTerminalText("Rocky's last location determined...");
+          const locationName = data.apartmentName
+            ? `${data.locationName} - ${data.apartmentName}`
+            : data.locationName;
+          setTerminalText(`Rocky located at ${locationName}`);
         }
       } catch (error) {
         console.error("Error parsing SSE message:", error);
