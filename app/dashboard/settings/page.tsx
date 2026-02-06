@@ -16,8 +16,16 @@ import { NotificationPreferences } from "@/components/notifications/notification
 
 interface RecentReport {
   id: string;
-  entryTime: string;
-  locationName: string;
+  createdAt: string;
+  cat: {
+    name: string;
+  };
+  location: {
+    name: string;
+  };
+  apartment?: {
+    name: string;
+  } | null;
 }
 
 interface UserStats {
