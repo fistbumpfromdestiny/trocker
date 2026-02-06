@@ -16,7 +16,8 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const catId = searchParams.get('catId') || 'rocky';
-    const limit = parseInt(searchParams.get('limit') || '50');
+    const limitParam = parseInt(searchParams.get('limit') || '50', 10);
+    const limit = Math.min(Math.max(isNaN(limitParam) ? 50 : limitParam, 1), 100);
 
     const timeline = await getLocationTimeline(catId, limit);
 

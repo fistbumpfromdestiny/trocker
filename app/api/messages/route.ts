@@ -19,16 +19,30 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const limit = parseInt(searchParams.get("limit") || "50");
-    const offset = parseInt(searchParams.get("offset") || "0");
+    const limitParam = parseInt(searchParams.get("limit") || "50", 10);
+    const offsetParam = parseInt(searchParams.get("offset") || "0", 10);
+    const limit = Math.min(Math.max(isNaN(limitParam) ? 50 : limitParam, 1), 100);
+    const offset = Math.max(isNaN(offsetParam) ? 0 : offsetParam, 0);
     const before = searchParams.get("before"); // Timestamp to fetch messages before
+
+    // Validate before timestamp if provided
+    let beforeDate: Date | undefined;
+    if (before) {
+      beforeDate = new Date(before);
+      if (isNaN(beforeDate.getTime())) {
+        return NextResponse.json(
+          { error: "Invalid 'before' timestamp" },
+          { status: 400 }
+        );
+      }
+    }
 
     const messages = await prisma.message.findMany({
       where: {
         deletedAt: null, // Only show non-deleted messages
-        ...(before && {
+        ...(beforeDate && {
           createdAt: {
-            lt: new Date(before), // Messages created before this timestamp
+            lt: beforeDate,
           },
         }),
       },
