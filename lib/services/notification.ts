@@ -140,14 +140,12 @@ export async function sendNotificationToUsers(
   userIds: string[],
   payload: NotificationPayload
 ): Promise<{ total: number; sent: number; failed: number }> {
-  let totalSent = 0;
-  let totalFailed = 0;
+  const results = await Promise.all(
+    userIds.map((userId) => sendNotificationToUser(userId, payload))
+  );
 
-  for (const userId of userIds) {
-    const result = await sendNotificationToUser(userId, payload);
-    totalSent += result.sent;
-    totalFailed += result.failed;
-  }
+  const totalSent = results.reduce((sum, r) => sum + r.sent, 0);
+  const totalFailed = results.reduce((sum, r) => sum + r.failed, 0);
 
   return { total: userIds.length, sent: totalSent, failed: totalFailed };
 }
