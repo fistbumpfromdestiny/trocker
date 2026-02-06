@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
+import { z } from 'zod';
 import { prisma } from '@/lib/db';
+
+const updateSettingSchema = z.object({
+  key: z.string().min(1).max(100).regex(/^[a-zA-Z][a-zA-Z0-9_]*$/, 'Key must be alphanumeric with underscores'),
+  value: z.string().max(10000),
+});
 
 export async function GET(request: NextRequest) {
   try {
@@ -36,19 +42,21 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { key, value } = body;
+    const parseResult = updateSettingSchema.safeParse(body);
 
-    if (!key || value === undefined) {
+    if (!parseResult.success) {
       return NextResponse.json(
-        { error: 'Key and value are required' },
+        { error: 'Invalid input', details: parseResult.error.flatten() },
         { status: 400 }
       );
     }
 
+    const { key, value } = parseResult.data;
+
     const setting = await prisma.appSettings.upsert({
       where: { key },
-      update: { value: String(value) },
-      create: { key, value: String(value) },
+      update: { value },
+      create: { key, value },
     });
 
     return NextResponse.json(setting);
