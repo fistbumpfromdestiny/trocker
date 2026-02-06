@@ -80,8 +80,8 @@ export default function InvitePage() {
       return;
     }
 
-    if (password.length < 6) {
-      toast.error("Password must be at least 6 characters");
+    if (password.length < 12) {
+      toast.error("Password must be at least 12 characters");
       return;
     }
 
