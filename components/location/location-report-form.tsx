@@ -25,10 +25,20 @@ interface LocationReportFormProps {
   catId: string;
 }
 
+interface Apartment {
+  id: string;
+  name: string;
+}
+
+interface OutdoorLocation {
+  id: string;
+  name: string;
+}
+
 export function LocationReportForm({ catId }: LocationReportFormProps) {
   const [locationType, setLocationType] = useState<string>("OUTDOOR");
-  const [apartments, setApartments] = useState<any[]>([]);
-  const [outdoorLocations, setOutdoorLocations] = useState<any[]>([]);
+  const [apartments, setApartments] = useState<Apartment[]>([]);
+  const [outdoorLocations, setOutdoorLocations] = useState<OutdoorLocation[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { register, handleSubmit, setValue, watch } = useForm<ReportFormData>({

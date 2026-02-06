@@ -9,8 +9,19 @@ interface CurrentLocationCardProps {
   catId: string;
 }
 
+interface LocationData {
+  location: boolean;
+  locationType: "APARTMENT" | "OUTDOOR" | "BUILDING_COMMON";
+  entryTime: string;
+  notes?: string;
+  apartment?: { name: string };
+  outdoorLocation?: { name: string };
+  buildingAreaName?: string;
+  user: { name: string | null; email: string };
+}
+
 export function CurrentLocationCard({ catId }: CurrentLocationCardProps) {
-  const [location, setLocation] = useState<any>(null);
+  const [location, setLocation] = useState<LocationData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
