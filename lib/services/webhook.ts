@@ -9,7 +9,7 @@ interface ArrivalWebhook {
   event: "rocky_arrived";
   visit_id: string;
   timestamp: string; // ISO8601
-  snapshot_base64?: string;
+  snapshot_base64?: string | null;
 }
 
 interface DepartureWebhook {
@@ -20,7 +20,7 @@ interface DepartureWebhook {
   duration_seconds: number;
   duration_human: string;
   detection_count: number;
-  snapshot_base64?: string;
+  snapshot_base64?: string | null;
 }
 
 export type WebhookPayload = ArrivalWebhook | DepartureWebhook;
