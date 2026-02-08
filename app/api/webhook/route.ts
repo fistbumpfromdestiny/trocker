@@ -8,20 +8,20 @@ import {
 
 const arrivalSchema = z.object({
   event: z.literal("rocky_arrived"),
-  visit_id: z.string().min(1),
+  visit_id: z.coerce.string().min(1),
   timestamp: z.string().datetime(),
-  snapshot_base64: z.string().optional(),
+  snapshot_base64: z.string().nullable().optional(),
 });
 
 const departureSchema = z.object({
   event: z.literal("rocky_departed"),
-  visit_id: z.string().min(1),
+  visit_id: z.coerce.string().min(1),
   arrival_time: z.string().datetime(),
   departure_time: z.string().datetime(),
   duration_seconds: z.number().int().nonnegative(),
   duration_human: z.string(),
   detection_count: z.number().int().nonnegative(),
-  snapshot_base64: z.string().optional(),
+  snapshot_base64: z.string().nullable().optional(),
 });
 
 const webhookPayloadSchema = z.discriminatedUnion("event", [
