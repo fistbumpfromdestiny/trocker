@@ -2,6 +2,7 @@ import { timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/db";
 import { locationEvents } from "@/lib/location-events";
 import { messageEvents } from "@/lib/message-events";
+import { notifications } from "@/lib/services/notification";
 
 const ROCKEYE_USER_ID = "rockeye-system";
 
@@ -142,6 +143,17 @@ export async function handleArrival(payload: ArrivalWebhook) {
     locationName: report.location.name,
     apartmentName: report.apartment?.name,
   });
+
+  // Send push notification to apartment owner
+  if (report.apartment?.userId) {
+    notifications
+      .rockyArrived(
+        report.apartment.userId,
+        report.location.name,
+        report.apartment.name
+      )
+      .catch((err) => console.error("Push notification failed:", err));
+  }
 
   // Post message to chat
   const locationName = report.apartment
