@@ -75,10 +75,12 @@ export async function POST(request: NextRequest) {
     });
 
     // Send push notification to apartment owner if Rocky arrives at their apartment
+    const notifiedUserIds = [session.user.id];
     if (
       report.apartment?.userId &&
       report.apartment.userId !== session.user.id
     ) {
+      notifiedUserIds.push(report.apartment.userId);
       notifications
         .rockyArrived(
           report.apartment.userId,
@@ -87,6 +89,15 @@ export async function POST(request: NextRequest) {
         )
         .catch((err) => console.error("Push notification failed:", err));
     }
+
+    // Broadcast to all other users who have arrival notifications enabled
+    notifications
+      .rockySpotted(
+        report.location.name,
+        report.apartment?.name,
+        notifiedUserIds
+      )
+      .catch((err) => console.error("Broadcast notification failed:", err));
 
     return NextResponse.json(report);
   } catch (error) {

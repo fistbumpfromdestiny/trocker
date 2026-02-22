@@ -204,7 +204,7 @@ export const notifications = {
     );
   },
 
-  // Rocky arrived at apartment
+  // Rocky arrived at apartment (notify the apartment owner specifically)
   async rockyArrived(
     apartmentOwnerId: string,
     locationName: string,
@@ -222,6 +222,29 @@ export const notifications = {
       tag: "rocky-arrival",
       requireInteraction: true,
     });
+  },
+
+  // Broadcast Rocky's location to all users (e.g. when someone reports it manually)
+  async rockySpotted(
+    locationName: string,
+    apartmentName: string | undefined,
+    excludeUserIds: string[] = []
+  ) {
+    const fullLocation = apartmentName
+      ? `${locationName} - ${apartmentName}`
+      : locationName;
+
+    return broadcastNotification(
+      {
+        title: "Rocky spotted!",
+        body: `Rocky is at ${fullLocation}`,
+        type: "arrival",
+        url: "/",
+        tag: "rocky-arrival",
+        renotify: true,
+      },
+      excludeUserIds
+    );
   },
 
   // Rocky departed from apartment
